@@ -1,0 +1,1509 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Stundenplan Live</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  body {
+    font-family: 'Inter', system-ui, -apple-system, Segoe UI, Roboto, Arial;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #111;
+    min-height: 100vh;
+    transition: all 0.5s ease;
+    overflow-x: hidden;
+  }
+  
+  body.dark {
+    background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+  }
+  
+  /* Welcome Screen */
+  .welcome-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+    animation: fadeIn 0.5s ease;
+  }
+  
+  .welcome-screen.dark {
+    background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+  }
+  
+  .welcome-content {
+    text-align: center;
+    color: white;
+    padding: 40px;
+    animation: slideUp 0.8s ease;
+  }
+  
+  .welcome-emoji {
+    font-size: 6rem;
+    margin-bottom: 20px;
+    animation: bounce 2s ease infinite;
+  }
+  
+  .welcome-title {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 15px;
+    text-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  
+  .welcome-subtitle {
+    font-size: 1.3rem;
+    margin-bottom: 30px;
+    opacity: 0.95;
+  }
+  
+  .welcome-name {
+    font-size: 1.1rem;
+    margin-bottom: 40px;
+    opacity: 0.9;
+  }
+  
+  .welcome-btn {
+    padding: 18px 50px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    background: white;
+    color: #667eea;
+    border: none;
+    border-radius: 50px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.2);
+  }
+  
+  .welcome-btn:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+  }
+  
+  /* Login Screen */
+  .login-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    animation: fadeIn 0.5s ease;
+  }
+  
+  .login-screen.dark {
+    background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
+  }
+  
+  .login-box {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    padding: 40px;
+    border-radius: 24px;
+    box-shadow: 0 8px 40px rgba(0,0,0,0.3);
+    width: 90%;
+    max-width: 400px;
+    animation: slideUp 0.8s ease;
+  }
+  
+  body.dark .login-box {
+    background: rgba(30, 30, 50, 0.95);
+    color: #eee;
+  }
+  
+  .login-title {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 10px;
+    text-align: center;
+    color: #667eea;
+  }
+  
+  body.dark .login-title {
+    color: #a89ff5;
+  }
+  
+  .login-subtitle {
+    font-size: 0.9rem;
+    text-align: center;
+    margin-bottom: 30px;
+    opacity: 0.7;
+  }
+  
+  .login-input {
+    width: 100%;
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 2px solid rgba(102, 126, 234, 0.3);
+    border-radius: 12px;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: white;
+  }
+  
+  body.dark .login-input {
+    background: rgba(30, 30, 50, 0.8);
+    color: #eee;
+    border-color: rgba(102, 126, 234, 0.5);
+  }
+  
+  .login-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+  }
+  
+  .login-btn {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+  }
+  
+  .login-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+  }
+  
+  .login-error {
+    color: #e53e3e;
+    text-align: center;
+    margin-top: 15px;
+    font-weight: 600;
+    display: none;
+  }
+  
+  .user-greeting {
+    background: rgba(102, 126, 234, 0.1);
+    padding: 10px 20px;
+    border-radius: 12px;
+    margin-bottom: 15px;
+    text-align: center;
+    font-weight: 600;
+  }
+  
+  body.dark .user-greeting {
+    background: rgba(102, 126, 234, 0.2);
+  }
+  
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+  
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  @keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-20px); }
+  }
+  
+  @keyframes shake {
+    0%, 100% { transform: translateX(0); }
+    10%, 30%, 50%, 70%, 90% { transform: translateX(-10px); }
+    20%, 40%, 60%, 80% { transform: translateX(10px); }
+  }
+  
+  /* Main Container */
+  .main-container {
+    display: none;
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 20px;
+    animation: fadeIn 0.5s ease;
+  }
+  
+  .main-container.active {
+    display: block;
+  }
+  
+  /* Glass Card Effect */
+  .glass-card {
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px);
+    border-radius: 20px;
+    padding: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    margin-bottom: 15px;
+  }
+  
+  body.dark .glass-card {
+    background: rgba(30, 30, 50, 0.85);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #eee;
+  }
+  
+  /* Header */
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+    flex-wrap: wrap;
+    gap: 15px;
+  }
+  
+  .header h1 {
+    font-size: 2rem;
+    font-weight: 800;
+    color: white;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.2);
+  }
+  
+  .controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+  
+  .btn {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 1rem;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.2);
+    color: white;
+    backdrop-filter: blur(10px);
+  }
+  
+  .btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+    background: rgba(255, 255, 255, 0.3);
+  }
+  
+  /* Current Lesson Card */
+  .current-lesson-card {
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .current-lesson-card::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    left: -50%;
+    width: 200%;
+    height: 200%;
+    background: linear-gradient(45deg, transparent, rgba(102, 126, 234, 0.1), transparent);
+    animation: shine 3s infinite;
+  }
+  
+  @keyframes shine {
+    0% { transform: translateX(-100%) translateY(-100%) rotate(45deg); }
+    100% { transform: translateX(100%) translateY(100%) rotate(45deg); }
+  }
+  
+  .timer-display {
+    font-size: 3rem;
+    font-weight: 900;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin: 15px 0;
+    position: relative;
+  }
+  
+  .timer-display.ending {
+    animation: pulse 0.5s ease-in-out infinite;
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  @keyframes pulse {
+    0%, 100% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+  }
+  
+  .subject-display {
+    font-size: 1.5rem;
+    font-weight: 800;
+    margin: 8px 0;
+  }
+  
+  .subject-tag {
+    display: inline-block;
+    padding: 6px 16px;
+    border-radius: 10px;
+    font-size: 1.2rem;
+    font-weight: 700;
+    color: white;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+  }
+  
+  .meta-info {
+    font-size: 1rem;
+    color: #666;
+    margin: 6px 0;
+  }
+  
+  body.dark .meta-info {
+    color: #aaa;
+  }
+  
+  .teacher-display {
+    font-size: 0.9rem;
+    color: #777;
+    margin: 6px 0;
+    font-weight: 500;
+  }
+  
+  body.dark .teacher-display {
+    color: #999;
+  }
+  
+  /* Stats Bar */
+  .stats-bar {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 12px;
+    margin: 15px 0;
+  }
+  
+  .stat-item {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+    padding: 12px;
+    border-radius: 12px;
+    text-align: center;
+    border: 1px solid rgba(102, 126, 234, 0.2);
+  }
+  
+  body.dark .stat-item {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+    border: 1px solid rgba(102, 126, 234, 0.3);
+  }
+  
+  .stat-emoji {
+    font-size: 1.5rem;
+    display: block;
+    margin-bottom: 4px;
+  }
+  
+  .stat-value {
+    font-size: 1.3rem;
+    font-weight: 800;
+    display: block;
+    margin-bottom: 3px;
+  }
+  
+  .stat-label {
+    font-size: 0.8rem;
+    opacity: 0.8;
+  }
+  
+  /* Progress Bars */
+  .progress-container {
+    margin: 15px 0;
+  }
+  
+  .progress-item {
+    margin-bottom: 15px;
+  }
+  
+  .progress-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 6px;
+    font-weight: 600;
+    font-size: 0.9rem;
+  }
+  
+  .progress-bar-bg {
+    height: 24px;
+    background: rgba(102, 126, 234, 0.1);
+    border-radius: 12px;
+    overflow: hidden;
+    position: relative;
+  }
+  
+  body.dark .progress-bar-bg {
+    background: rgba(102, 126, 234, 0.2);
+  }
+  
+  .progress-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #667eea 0%, #764ba2 100%);
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    transition: width 0.5s ease;
+    position: relative;
+    overflow: hidden;
+  }
+  
+  .progress-fill::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    animation: shimmer 2s infinite;
+  }
+  
+  @keyframes shimmer {
+    0% { left: -100%; }
+    100% { left: 100%; }
+  }
+  
+  /* Schedule Editor */
+  .schedule-editor {
+    margin: 15px 0;
+  }
+  
+  .editor-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  
+  .editor-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+  }
+  
+  .editor-btn {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+  }
+  
+  .editor-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+  }
+  
+  .editor-content {
+    display: none;
+    margin-top: 15px;
+  }
+  
+  .editor-content.active {
+    display: block;
+    animation: slideDown 0.3s ease;
+  }
+  
+  @keyframes slideDown {
+    from {
+      opacity: 0;
+      transform: translateY(-10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .lesson-edit {
+    display: grid;
+    grid-template-columns: 100px 1fr 1fr auto;
+    gap: 10px;
+    align-items: center;
+    padding: 12px;
+    background: rgba(102, 126, 234, 0.05);
+    border-radius: 10px;
+    margin-bottom: 10px;
+  }
+  
+  body.dark .lesson-edit {
+    background: rgba(102, 126, 234, 0.1);
+  }
+  
+  .lesson-edit input, .lesson-edit select {
+    padding: 8px 12px;
+    border: 2px solid rgba(102, 126, 234, 0.2);
+    border-radius: 8px;
+    font-size: 0.95rem;
+    background: white;
+  }
+  
+  body.dark .lesson-edit input,
+  body.dark .lesson-edit select {
+    background: rgba(30, 30, 50, 0.8);
+    color: #eee;
+    border-color: rgba(102, 126, 234, 0.3);
+  }
+  
+  /* Today Schedule */
+  .today-schedule {
+    margin: 15px 0;
+  }
+  
+  .schedule-title {
+    font-size: 1.2rem;
+    font-weight: 700;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  
+  .lesson-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px;
+    margin-bottom: 8px;
+    border-radius: 10px;
+    background: rgba(102, 126, 234, 0.05);
+    border-left: 4px solid transparent;
+    transition: all 0.3s ease;
+  }
+  
+  body.dark .lesson-item {
+    background: rgba(102, 126, 234, 0.1);
+  }
+  
+  .lesson-item:hover {
+    transform: translateX(5px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
+  
+  .lesson-item.current {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.2), rgba(118, 75, 162, 0.2));
+    border-left-color: #667eea;
+    transform: scale(1.02);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+  }
+  
+  .lesson-time {
+    font-weight: 700;
+    font-size: 0.95rem;
+  }
+  
+  .lesson-details {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  
+  .lesson-subject-tag {
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-weight: 700;
+    color: white;
+    font-size: 0.85rem;
+  }
+  
+  .lesson-teacher {
+    font-size: 0.75rem;
+    opacity: 0.7;
+  }
+  
+  /* Subject Colors */
+  .MA { background: #3182ce; }
+  .D { background: #38a169; }
+  .E { background: #d69e2e; }
+  .F { background: #e53e3e; }
+  .NT { background: #805ad5; }
+  .Gg { background: #dd6b20; }
+  .G { background: #319795; }
+  .BG { background: #d53f8c; }
+  .Mu { background: #9f7aea; }
+  .BS { background: #718096; }
+  .MI { background: #2c5282; }
+  .WAH { background: #975a16; }
+  .RKE { background: #5a67d8; }
+  
+  /* Motivation Card */
+  .motivation-card {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 15px;
+    border-radius: 16px;
+    text-align: center;
+    font-size: 1rem;
+    font-weight: 700;
+    box-shadow: 0 8px 30px rgba(102, 126, 234, 0.4);
+    margin: 15px 0;
+  }
+  
+  /* Celebration */
+  .celebration {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 6rem;
+    animation: celebrate 2s ease-out forwards;
+    pointer-events: none;
+    z-index: 1000;
+    text-shadow: 0 0 30px rgba(255,255,255,0.8);
+  }
+  
+  @keyframes celebrate {
+    0% {
+      transform: translate(-50%, -50%) scale(0) rotate(0deg);
+      opacity: 1;
+    }
+    100% {
+      transform: translate(-50%, -50%) scale(2.5) rotate(360deg);
+      opacity: 0;
+    }
+  }
+  
+  .confetti {
+    position: fixed;
+    width: 12px;
+    height: 12px;
+    pointer-events: none;
+    z-index: 999;
+    border-radius: 50%;
+  }
+  
+  /* Responsive */
+  @media (max-width: 768px) {
+    .welcome-title { font-size: 2rem; }
+    .welcome-subtitle { font-size: 1.1rem; }
+    .timer-display { font-size: 3.5rem; }
+    .subject-display { font-size: 1.8rem; }
+    .header h1 { font-size: 1.5rem; }
+    .lesson-edit { grid-template-columns: 1fr; }
+    .stats-bar { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Login Screen -->
+<div class="login-screen" id="loginScreen">
+  <div class="login-box">
+    <h1 class="login-title">🔐 Stundenplan Login</h1>
+    <p class="login-subtitle">Premium Version - Nur für autorisierte Nutzer</p>
+    <input type="text" class="login-input" id="usernameInput" placeholder="Benutzername" autocomplete="username">
+    <input type="password" class="login-input" id="passwordInput" placeholder="Passwort" autocomplete="current-password">
+    <button class="login-btn" onclick="handleLogin()">Anmelden 🚀</button>
+    <div class="login-error" id="loginError">❌ Falscher Benutzername oder Passwort</div>
+  </div>
+</div>
+
+<!-- Welcome Screen -->
+<div class="welcome-screen" id="welcomeScreen">
+  <div class="welcome-content">
+    <div class="welcome-emoji">🎓</div>
+    <h1 class="welcome-title">Willkommen zurück!</h1>
+    <p class="welcome-subtitle">Premium Version</p>
+    <p class="welcome-name">Stundenplan Website von Andi</p>
+    <button class="welcome-btn" onclick="startApp()">Los geht's! 🚀</button>
+  </div>
+</div>
+
+<!-- Main Container -->
+<div class="main-container" id="mainContainer">
+  <div class="header">
+    <h1>📚 Stundenplan Live</h1>
+    <div class="controls">
+      <button class="btn" id="soundBtn">🔔 Sound</button>
+      <button class="btn" id="darkBtn">🌙 Dark</button>
+      <button class="btn" id="editBtn">✏️ Bearbeiten</button>
+    </div>
+  </div>
+  
+  <!-- Current Lesson Card -->
+  <div class="glass-card current-lesson-card">
+    <div class="timer-display" id="timerDisplay">--:--</div>
+    <div class="subject-display">
+      <span class="subject-tag" id="subjectTag">–</span>
+    </div>
+    <div class="meta-info" id="metaInfo">Lade Daten...</div>
+    <div class="teacher-display" id="teacherDisplay"></div>
+    
+    <div class="stats-bar">
+      <div class="stat-item">
+        <span class="stat-emoji">⏰</span>
+        <span class="stat-value" id="currentTime">--:--</span>
+        <span class="stat-label">Aktuelle Zeit</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-emoji">📚</span>
+        <span class="stat-value" id="totalLessons">0</span>
+        <span class="stat-label">Lektionen heute</span>
+      </div>
+      <div class="stat-item">
+        <span class="stat-emoji">⏳</span>
+        <span class="stat-value" id="remainingLessons">0</span>
+        <span class="stat-label">Noch übrig</span>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Progress Card -->
+  <div class="glass-card">
+    <div class="progress-container">
+      <div class="progress-item">
+        <div class="progress-header">
+          <span>🌅 Tagesfortschritt</span>
+          <span id="dayPercent">0%</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-fill" id="dayProgress" style="width:0%">
+            <span id="dayProgressText">0%</span>
+          </div>
+        </div>
+      </div>
+      
+      <div class="progress-item">
+        <div class="progress-header">
+          <span>📅 Wochenfortschritt</span>
+          <span id="weekPercent">0%</span>
+        </div>
+        <div class="progress-bar-bg">
+          <div class="progress-fill" id="weekProgress" style="width:0%">
+            <span id="weekProgressText">0%</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Motivation Card -->
+  <div class="motivation-card" id="motivationCard">
+    💪 Du schaffst das!
+  </div>
+  
+  <!-- Schedule Editor -->
+  <div class="glass-card schedule-editor">
+    <div class="editor-header">
+      <h2 class="editor-title">⚙️ Stundenplan anpassen</h2>
+      <button class="editor-btn" id="toggleEditor">Bearbeiten</button>
+    </div>
+    <div class="editor-content" id="editorContent">
+      <p style="margin-bottom: 15px; opacity: 0.8;">
+        Hier kannst du kurzfristige Änderungen am heutigen Stundenplan vornehmen (z.B. Vertretungen oder Ausfälle).
+      </p>
+      <div id="editableLessons"></div>
+      <button class="editor-btn" onclick="saveSchedule()" style="margin-top: 10px;">💾 Speichern</button>
+      <button class="editor-btn" onclick="resetSchedule()" style="margin-top: 10px; margin-left: 10px; background: linear-gradient(135deg, #e53e3e 0%, #f093fb 100%);">🔄 Zurücksetzen</button>
+    </div>
+  </div>
+  
+  <!-- Today's Schedule -->
+  <div class="glass-card today-schedule">
+    <h2 class="schedule-title">📋 Heutiger Stundenplan</h2>
+    <div id="todaySchedule"></div>
+  </div>
+</div>
+
+<script>
+// Authorized users
+const authorizedUsers = ['mila', 'andjela', 'janelle', 'nina', 'filip', 'valentin', 'andi', 'david', 'lisian', 'matteo', 'gabor', 'leon', 'hager'];
+let currentUser = null;
+
+const slotTimes = [
+  ["07:30","08:15"],["08:20","09:05"],["09:10","09:55"],
+  ["10:15","11:00"],["11:05","11:50"],["12:00","12:45"],
+  ["12:55","13:40"],["13:45","14:30"],["14:35","15:20"],
+  ["15:30","16:15"],["16:20","17:05"],["17:10","17:55"]
+];
+
+const defaultWeek = [
+  ["","D","MA","MA","NT","","","E","G","MI","BS",""],
+  ["","E","F","D","D","","","MA","Gg","D","",""],
+  ["MA","MA","Gg","NT","NT","","","","","","",""],
+  ["D","F","F","WAH","WAH","WAH","WAH","BS","BS","","",""],
+  ["","Mu","MA","BG","BG","","","E","RKE","RKE","",""]
+];
+
+const defaultTeachers = [
+  ["","gker","mhag","mhag","blei","","","gker","gker","mhag","amor/ktak/cgoe/fmae",""],
+  ["","gker","fmae","gker","gker","","","mhag","mhag","gker","",""],
+  ["mhag","mhag","mhag","blei","blei","","","","","","",""],
+  ["gker","fmae","fmae","shac/stog","shac","shac/stog","shac","amor/ktak/cgoe/fmae","amor/ktak/cgoe/fmae","","",""],
+  ["","mlim","mhag","rcaf","rcaf","","","gker","gker","gker","",""]
+];
+
+let week = JSON.parse(JSON.stringify(defaultWeek));
+let weekTeachers = JSON.parse(JSON.stringify(defaultTeachers));
+
+const subjectNames = {
+  "MA": "Arithmetik und Algebra",
+  "BS": "Bewegung und Sport",
+  "BG": "Bildnerisches Gestalten",
+  "D": "Deutsch",
+  "E": "Englisch",
+  "F": "Französisch",
+  "MI": "Medien und Informatik",
+  "Mu": "Musik",
+  "NT": "Natur und Technik",
+  "RKE": "Religionen, Kulturen, Ethik",
+  "Gg": "RZG Geografie",
+  "G": "RZG Geschichte",
+  "WAH": "Wirtschaft Arbeit Haushalt"
+};
+
+const teacherNames = {
+  "rcaf": "Cafisi Roberta",
+  "cgoe": "Görz Caroline",
+  "shac": "Hachani-Erny Sonja",
+  "mhag": "Hager Michael",
+  "gker": "Kertész Gábor",
+  "blei": "Leinenbach Bettina",
+  "mlim": "Lim Mark",
+  "amor": "Moritz Anabelle",
+  "fmae": "Mächler Florian",
+  "ktak": "Takouk Karim",
+  "stog": "Tognetti Susanne"
+};
+
+const motivations = [
+  "💪 Du schaffst das!",
+  "🌟 Bleib dran, du machst das super!",
+  "🚀 Weiter so, du bist auf dem richtigen Weg!",
+  "✨ Jede Stunde bringt dich näher ans Ziel!",
+  "🎯 Konzentriert bleiben zahlt sich aus!",
+  "🔥 Du rockst das heute!",
+  "⭐ Stark, wie du durchziehst!",
+  "🎓 Lernen macht dich stärker!",
+  "💡 Du wächst mit jeder Lektion!",
+  "🏆 Fast geschafft, gib nicht auf!"
+];
+
+let soundEnabled = true;
+let darkMode = false;
+let lastLessonEndTime = 0;
+
+// Check if user is logged in on page load
+window.addEventListener('DOMContentLoaded', () => {
+  checkLoginStatus();
+  
+  // Enter key support for login
+  document.getElementById('passwordInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      handleLogin();
+    }
+  });
+  document.getElementById('usernameInput').addEventListener('keypress', (e) => {
+    if (e.key === 'Enter') {
+      handleLogin();
+    }
+  });
+});
+
+function checkLoginStatus() {
+  try {
+    const cookies = document.cookie.split(';');
+    const userCookie = cookies.find(c => c.trim().startsWith('loggedInUser='));
+    if (userCookie) {
+      const username = userCookie.split('=')[1];
+      if (authorizedUsers.includes(username)) {
+        currentUser = username;
+        showWelcomeScreen();
+        return;
+      }
+    }
+  } catch(e) {}
+  
+  // Show login screen if not logged in
+  document.getElementById('loginScreen').style.display = 'flex';
+}
+
+function handleLogin() {
+  const username = document.getElementById('usernameInput').value.toLowerCase().trim();
+  const password = document.getElementById('passwordInput').value.trim();
+  
+  // Check if user is authorized and password matches username
+  if (authorizedUsers.includes(username) && password === username) {
+    currentUser = username;
+    // Save login state
+    document.cookie = `loggedInUser=${username};max-age=2592000;path=/`; // 30 days
+    
+    // Hide login, show welcome
+    document.getElementById('loginScreen').style.display = 'none';
+    showWelcomeScreen();
+  } else {
+    // Show error
+    document.getElementById('loginError').style.display = 'block';
+    document.getElementById('passwordInput').value = '';
+    
+    // Shake animation
+    const loginBox = document.querySelector('.login-box');
+    loginBox.style.animation = 'none';
+    setTimeout(() => {
+      loginBox.style.animation = 'shake 0.5s';
+    }, 10);
+  }
+}
+
+function handleLogout() {
+  if (confirm('Möchtest du dich wirklich abmelden?')) {
+    document.cookie = 'loggedInUser=;max-age=0;path=/';
+    currentUser = null;
+    location.reload();
+  }
+}
+
+function showWelcomeScreen() {
+  document.getElementById('welcomeScreen').style.display = 'flex';
+}
+
+function startApp() {
+  document.getElementById('welcomeScreen').style.display = 'none';
+  document.getElementById('mainContainer').classList.add('active');
+  
+  // Update user greeting
+  const greeting = document.getElementById('userGreeting');
+  const capitalizedUser = currentUser.charAt(0).toUpperCase() + currentUser.slice(1);
+  greeting.textContent = `👋 Willkommen zurück, ${capitalizedUser}!`;
+  
+  loadSettings();
+  update();
+}
+
+function todayIndex() {
+  const d = new Date().getDay();
+  return (d + 6) % 7;
+}
+
+function pad(n) {
+  return n.toString().padStart(2, "0");
+}
+
+function toDateToday(hm, base = new Date()) {
+  const [h, m] = hm.split(":").map(Number);
+  const d = new Date(base);
+  d.setHours(h, m, 0, 0);
+  return d;
+}
+
+function formatSeconds(sec) {
+  const m = Math.floor(sec / 60);
+  const s = sec % 60;
+  return `${pad(m)}:${pad(s)}`;
+}
+
+function playSound(frequency, duration) {
+  if (!soundEnabled) return;
+  try {
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    const oscillator = audioContext.createOscillator();
+    const gainNode = audioContext.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(audioContext.destination);
+    
+    oscillator.frequency.value = frequency;
+    oscillator.type = 'sine';
+    
+    gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+    gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + duration);
+    
+    oscillator.start(audioContext.currentTime);
+    oscillator.stop(audioContext.currentTime + duration);
+  } catch (e) {}
+}
+
+function celebrate() {
+  const emojis = ['🎉', '🎊', '🥳', '🌟', '⭐', '✨', '🎈', '🎆'];
+  const randomEmoji = emojis[Math.floor(Math.random() * emojis.length)];
+  
+  const cel = document.createElement('div');
+  cel.className = 'celebration';
+  cel.textContent = randomEmoji;
+  document.body.appendChild(cel);
+  
+  for(let i = 0; i < 50; i++) {
+    setTimeout(() => {
+      const conf = document.createElement('div');
+      conf.className = 'confetti';
+      conf.style.left = Math.random() * 100 + '%';
+      conf.style.top = '-10px';
+      conf.style.background = `hsl(${Math.random() * 360}, 70%, 60%)`;
+      document.body.appendChild(conf);
+      
+      const duration = 2000 + Math.random() * 1000;
+      const startTime = Date.now();
+      
+      function animateConfetti() {
+        const elapsed = Date.now() - startTime;
+        const progress = elapsed / duration;
+        
+        if (progress < 1) {
+          conf.style.top = (progress * 110) + '%';
+          conf.style.transform = `rotate(${progress * 720}deg)`;
+          conf.style.opacity = 1 - progress;
+          requestAnimationFrame(animateConfetti);
+        } else {
+          conf.remove();
+        }
+      }
+      animateConfetti();
+    }, i * 20);
+  }
+  
+  if (soundEnabled) {
+    playSound(523, 0.2);
+    setTimeout(() => playSound(659, 0.2), 100);
+    setTimeout(() => playSound(784, 0.3), 200);
+  }
+  
+  setTimeout(() => cel.remove(), 2000);
+}
+
+function calculateDayProgress(now = new Date()) {
+  const dIdx = todayIndex();
+  if(dIdx < 0 || dIdx > 4) return 0;
+  
+  const dayStart = toDateToday(slotTimes[0][0], now);
+  const dayEnd = toDateToday(slotTimes[slotTimes.length - 1][1], now);
+  
+  if(now < dayStart) return 0;
+  if(now >= dayEnd) return 100;
+  
+  const total = dayEnd - dayStart;
+  const elapsed = now - dayStart;
+  return Math.round((elapsed / total) * 100);
+}
+
+function calculateWeekProgress(now = new Date()) {
+  const dIdx = todayIndex();
+  if(dIdx < 0 || dIdx > 4) {
+    return dIdx === 5 || dIdx === 6 ? 100 : 0;
+  }
+  
+  const totalSchoolMinutes = 5 * (17*60+55 - 7*60-30);
+  let completedMinutes = 0;
+  
+  for(let d = 0; d < dIdx; d++) {
+    completedMinutes += (17*60+55 - 7*60-30);
+  }
+  
+  const todayStart = toDateToday("07:30", now);
+  const todayEnd = toDateToday("17:55", now);
+  
+  if(now >= todayStart) {
+    if(now >= todayEnd) {
+      completedMinutes += (17*60+55 - 7*60-30);
+    } else {
+      const todayElapsed = Math.floor((now - todayStart) / 60000);
+      completedMinutes += todayElapsed;
+    }
+  }
+  
+  return Math.min(100, Math.round((completedMinutes / totalSchoolMinutes) * 100));
+}
+
+function countLessons() {
+  const dIdx = todayIndex();
+  if(dIdx < 0 || dIdx > 4) return { total: 0, remaining: 0 };
+  
+  const now = new Date();
+  let total = 0;
+  let remaining = 0;
+  
+  for(let i = 0; i < slotTimes.length; i++) {
+    if(week[dIdx][i] && week[dIdx][i] !== "") {
+      total++;
+      const end = toDateToday(slotTimes[i][1], now);
+      if(now < end) remaining++;
+    }
+  }
+  
+  return { total, remaining };
+}
+
+function findCurrentSlot(now = new Date()) {
+  const dIdx = todayIndex();
+  if(dIdx < 0 || dIdx > 4) return {state: "none"};
+  
+  for(let i = 0; i < slotTimes.length; i++) {
+    const start = toDateToday(slotTimes[i][0], now);
+    const end = toDateToday(slotTimes[i][1], now);
+    if(now >= start && now < end) {
+      return {
+        state: "lesson",
+        slot: i,
+        start,
+        end,
+        subject: week[dIdx][i] || "frei",
+        teacher: weekTeachers[dIdx][i] || ""
+      };
+    }
+  }
+  
+  for(let i = 0; i < slotTimes.length - 1; i++) {
+    const end = toDateToday(slotTimes[i][1], now);
+    const next = toDateToday(slotTimes[i + 1][0], now);
+    if(now >= end && now < next) {
+      return {
+        state: "break",
+        after: i,
+        start: end,
+        end: next,
+        nextSubject: week[dIdx][i + 1] || "",
+        nextTeacher: weekTeachers[dIdx][i + 1] || ""
+      };
+    }
+  }
+  
+  return {state: "none"};
+}
+
+function updateMotivation() {
+  const dayProg = calculateDayProgress();
+  let msg;
+  
+  if(dayProg === 0) msg = "🌅 Guten Morgen! Neuer Tag, neue Chancen!";
+  else if(dayProg < 25) msg = motivations[Math.floor(Math.random() * 3)];
+  else if(dayProg < 50) msg = motivations[3 + Math.floor(Math.random() * 3)];
+  else if(dayProg < 75) msg = motivations[6 + Math.floor(Math.random() * 2)];
+  else if(dayProg < 100) msg = "🏆 Fast geschafft, gib nicht auf!";
+  else msg = "🎉 Geschafft! Du hast es super gemacht!";
+  
+  document.getElementById("motivationCard").textContent = msg;
+}
+
+function renderTodaySchedule() {
+  const wrap = document.getElementById("todaySchedule");
+  const idx = todayIndex();
+  
+  if(idx > 4) {
+    wrap.innerHTML = "<div style='text-align:center;padding:40px;font-size:1.3rem'>🎉 Wochenende! Geniesse deine freie Zeit!</div>";
+    return;
+  }
+  
+  wrap.innerHTML = "";
+  const s = findCurrentSlot();
+  
+  for(let i = 0; i < slotTimes.length; i++) {
+    const subj = week[idx][i];
+    if(!subj || subj === "") continue;
+    
+    const div = document.createElement("div");
+    div.className = "lesson-item";
+    if(s.state === "lesson" && s.slot === i) {
+      div.classList.add("current");
+    }
+    
+    const teacherCode = weekTeachers[idx][i] || '';
+    const teacherDisplay = teacherCode ? teacherCode : '';
+    
+    div.innerHTML = `
+      <div class="lesson-time">${slotTimes[i][0]} - ${slotTimes[i][1]}</div>
+      <div class="lesson-details">
+        <span class="lesson-subject-tag ${subj}">${subj}</span>
+        ${teacherDisplay ? `<span class="lesson-teacher">${teacherDisplay}</span>` : ''}
+      </div>
+    `;
+    wrap.appendChild(div);
+  }
+}
+
+function renderEditor() {
+  const wrap = document.getElementById("editableLessons");
+  const idx = todayIndex();
+  
+  if(idx < 0 || idx > 4) {
+    wrap.innerHTML = "<p>Bearbeitung nur an Schultagen möglich.</p>";
+    return;
+  }
+  
+  wrap.innerHTML = "";
+  
+  for(let i = 0; i < slotTimes.length; i++) {
+    const div = document.createElement("div");
+    div.className = "lesson-edit";
+    
+    const subj = week[idx][i] || "";
+    const teacher = weekTeachers[idx][i] || "";
+    
+    div.innerHTML = `
+      <div><strong>${slotTimes[i][0]}-${slotTimes[i][1]}</strong></div>
+      <select data-slot="${i}" data-type="subject">
+        <option value="">Frei</option>
+        ${Object.keys(subjectNames).map(s => 
+          `<option value="${s}" ${s === subj ? 'selected' : ''}>${s}</option>`
+        ).join('')}
+      </select>
+      <input type="text" data-slot="${i}" data-type="teacher" value="${teacher}" placeholder="Lehrperson">
+      <button onclick="clearLesson(${i})" style="padding:8px 12px;background:#e53e3e;color:white;border:none;border-radius:8px;cursor:pointer;">❌</button>
+    `;
+    wrap.appendChild(div);
+  }
+}
+
+function clearLesson(slot) {
+  const idx = todayIndex();
+  if(idx < 0 || idx > 4) return;
+  
+  week[idx][slot] = "";
+  weekTeachers[idx][slot] = "";
+  renderEditor();
+  update();
+}
+
+function saveSchedule() {
+  const idx = todayIndex();
+  if(idx < 0 || idx > 4) return;
+  
+  const subjects = document.querySelectorAll('[data-type="subject"]');
+  const teachers = document.querySelectorAll('[data-type="teacher"]');
+  
+  subjects.forEach(select => {
+    const slot = parseInt(select.dataset.slot);
+    week[idx][slot] = select.value;
+  });
+  
+  teachers.forEach(input => {
+    const slot = parseInt(input.dataset.slot);
+    weekTeachers[idx][slot] = input.value;
+  });
+  
+  saveSettings();
+  update();
+  alert('✅ Stundenplan gespeichert!');
+}
+
+function resetSchedule() {
+  if(!confirm('Möchtest du wirklich den Stundenplan zurücksetzen?')) return;
+  
+  week = JSON.parse(JSON.stringify(defaultWeek));
+  weekTeachers = JSON.parse(JSON.stringify(defaultTeachers));
+  
+  saveSettings();
+  renderEditor();
+  update();
+  alert('🔄 Stundenplan wurde zurückgesetzt!');
+}
+
+function saveSettings() {
+  const settings = {
+    soundEnabled,
+    darkMode,
+    week,
+    weekTeachers
+  };
+  const data = {
+    settings,
+    savedDate: new Date().toISOString()
+  };
+  try {
+    const encoded = btoa(JSON.stringify(data));
+    document.cookie = `stundenplan=${encoded};max-age=31536000;path=/`;
+  } catch(e) {}
+}
+
+function loadSettings() {
+  try {
+    const cookies = document.cookie.split(';');
+    const stundenplanCookie = cookies.find(c => c.trim().startsWith('stundenplan='));
+    if(stundenplanCookie) {
+      const encoded = stundenplanCookie.split('=')[1];
+      const data = JSON.parse(atob(encoded));
+      const settings = data.settings;
+      
+      soundEnabled = settings.soundEnabled ?? true;
+      darkMode = settings.darkMode ?? false;
+      
+      if(settings.week) week = settings.week;
+      if(settings.weekTeachers) weekTeachers = settings.weekTeachers;
+      
+      document.body.classList.toggle('dark', darkMode);
+      document.getElementById('darkBtn').innerHTML = darkMode ? '☀️ Light' : '🌙 Dark';
+      document.getElementById('soundBtn').innerHTML = soundEnabled ? '🔔 Sound' : '🔕 Stumm';
+    }
+  } catch(e) {}
+}
+
+function update() {
+  const now = new Date();
+  
+  document.getElementById("currentTime").textContent = 
+    `${pad(now.getHours())}:${pad(now.getMinutes())}`;
+  
+  const dayProg = calculateDayProgress(now);
+  const weekProg = calculateWeekProgress(now);
+  
+  document.getElementById("dayPercent").textContent = `${dayProg}%`;
+  document.getElementById("dayProgress").style.width = `${dayProg}%`;
+  document.getElementById("dayProgressText").textContent = `${dayProg}%`;
+  
+  document.getElementById("weekPercent").textContent = `${weekProg}%`;
+  document.getElementById("weekProgress").style.width = `${weekProg}%`;
+  document.getElementById("weekProgressText").textContent = `${weekProg}%`;
+  
+  const lessons = countLessons();
+  document.getElementById("totalLessons").textContent = lessons.total;
+  document.getElementById("remainingLessons").textContent = lessons.remaining;
+  
+  const s = findCurrentSlot(now);
+  const timer = document.getElementById("timerDisplay");
+  const subjectTag = document.getElementById("subjectTag");
+  const meta = document.getElementById("metaInfo");
+  const teacherDisp = document.getElementById("teacherDisplay");
+  
+  if(s.state === "lesson") {
+    const left = Math.floor((s.end - now) / 1000);
+    timer.textContent = formatSeconds(left);
+    
+    timer.classList.remove('ending');
+    if(left <= 60) {
+      timer.classList.add('ending');
+    }
+    
+    subjectTag.textContent = s.subject;
+    subjectTag.className = `subject-tag ${s.subject}`;
+    meta.textContent = `${slotTimes[s.slot][0]} - ${slotTimes[s.slot][1]}`;
+    
+    if(s.teacher) {
+      const fullName = subjectNames[s.subject] || s.subject;
+      const teacherFull = s.teacher.split('/').map(t => teacherNames[t] || t).join(' / ');
+      teacherDisp.textContent = `${fullName} • ${teacherFull}`;
+    } else {
+      teacherDisp.textContent = "";
+    }
+    
+    if(left === 0 && s.end.getTime() !== lastLessonEndTime) {
+      lastLessonEndTime = s.end.getTime();
+      celebrate();
+    }
+  } else if(s.state === "break") {
+    const left = Math.floor((s.end - now) / 1000);
+    timer.textContent = formatSeconds(left);
+    timer.classList.remove('ending');
+    
+    subjectTag.textContent = "☕ Pause";
+    subjectTag.className = "subject-tag";
+    subjectTag.style.background = "linear-gradient(135deg, #48bb78, #38a169)";
+    meta.textContent = `Bis ${pad(s.end.getHours())}:${pad(s.end.getMinutes())}`;
+    
+    if(s.nextSubject) {
+      teacherDisp.textContent = `Nächste Lektion: ${s.nextSubject}`;
+    } else {
+      teacherDisp.textContent = "";
+    }
+  } else {
+    timer.textContent = "--:--";
+    timer.classList.remove('ending');
+    teacherDisp.textContent = "";
+    
+    const idx = todayIndex();
+    if(idx >= 0 && idx <= 4) {
+      subjectTag.textContent = "🎯 Keine Lektion";
+      subjectTag.className = "subject-tag";
+      subjectTag.style.background = "linear-gradient(135deg, #718096, #4a5568)";
+      
+      const firstStart = toDateToday(slotTimes[0][0], now);
+      if(now < firstStart) {
+        const minutes = Math.floor((firstStart - now) / 60000);
+        meta.textContent = `Schule beginnt in ${minutes} Minuten`;
+      } else {
+        meta.textContent = "Schultag vorbei 🎉";
+      }
+    } else {
+      subjectTag.textContent = "🎉 Wochenende";
+      subjectTag.className = "subject-tag";
+      subjectTag.style.background = "linear-gradient(135deg, #f093fb, #f5576c)";
+      meta.textContent = "Geniesse deine freie Zeit!";
+    }
+  }
+  
+  renderTodaySchedule();
+}
+
+document.getElementById('darkBtn').addEventListener('click', () => {
+  darkMode = !darkMode;
+  document.body.classList.toggle('dark', darkMode);
+  document.getElementById('darkBtn').innerHTML = darkMode ? '☀️ Light' : '🌙 Dark';
+  saveSettings();
+});
+
+document.getElementById('soundBtn').addEventListener('click', () => {
+  soundEnabled = !soundEnabled;
+  document.getElementById('soundBtn').innerHTML = soundEnabled ? '🔔 Sound' : '🔕 Stumm';
+  if(soundEnabled) playSound(440, 0.1);
+  saveSettings();
+});
+
+document.getElementById('editBtn').addEventListener('click', () => {
+  const editorContent = document.getElementById('editorContent');
+  if(!editorContent.classList.contains('active')) {
+    editorContent.classList.add('active');
+    renderEditor();
+  }
+  // Scroll zum Editor
+  document.querySelector('.schedule-editor').scrollIntoView({ 
+    behavior: 'smooth', 
+    block: 'start' 
+  });
+});
+
+document.getElementById('toggleEditor').addEventListener('click', () => {
+  const content = document.getElementById('editorContent');
+  content.classList.toggle('active');
+  if(content.classList.contains('active')) {
+    renderEditor();
+  }
+});
+
+let wakeLock = null;
+async function requestWakeLock() {
+  try {
+    if ('wakeLock' in navigator) {
+      wakeLock = await navigator.wakeLock.request('screen');
+    }
+  } catch (err) {}
+}
+
+requestWakeLock();
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') {
+    requestWakeLock();
+  }
+});
+
+updateMotivation();
+setInterval(update, 1000);
+setInterval(updateMotivation, 300000);
+</script>
+</body>
+</html>
