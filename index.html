@@ -1030,15 +1030,16 @@
 <div class="pause-overlay" id="pauseOverlay">
   <div class="pause-content">
     <div class="pause-emoji">⏸️</div>
-    <h1 class="pause-title">Pause hinzufügen</h1>
-    <p class="pause-text">Wie lange dauert die Pause?</p>
-    <div style="display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap;">
+    <h1 class="pause-title" id="pauseTitle">Pause hinzufügen</h1>
+    <p class="pause-text" id="pauseText">Wie lange dauert die Pause?</p>
+    <div id="pauseButtons" style="display: flex; gap: 15px; justify-content: center; margin-bottom: 20px; flex-wrap: wrap;">
       <button class="welcome-btn" onclick="addPause(5)" style="padding: 15px 30px;">5 Min</button>
       <button class="welcome-btn" onclick="addPause(10)" style="padding: 15px 30px;">10 Min</button>
       <button class="welcome-btn" onclick="addPause(15)" style="padding: 15px 30px;">15 Min</button>
     </div>
-    <button class="welcome-btn" onclick="closePause()" style="background: #718096;">Abbrechen</button>
-    <div id="pauseInfo" style="margin-top: 20px; font-size: 1.1rem; opacity: 0.9;"></div>
+    <div id="pauseTimer" style="display: none; font-size: 3rem; font-weight: 900; margin: 20px 0;"></div>
+    <div id="pauseActions"></div>
+    <button class="welcome-btn" onclick="closePause()" id="pauseCancelBtn" style="background: #718096;">Abbrechen</button>
   </div>
 </div>
 
@@ -1068,7 +1069,18 @@
     <!-- Tic Tac Toe -->
     <div class="game-area" id="tictactoeGame">
       <h3 style="text-align: center; margin-bottom: 15px;">⭕ Tic-Tac-Toe</h3>
-      <p style="text-align: center; margin-bottom: 15px;" id="tttStatus">Du bist X</p>
+      
+      <div style="text-align: center; margin-bottom: 20px;">
+        <p style="margin-bottom: 10px; font-weight: 600;">Spielmodus wählen:</p>
+        <div style="display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; margin-bottom: 15px;">
+          <button class="editor-btn" onclick="setTTTMode('friend')" id="tttFriendBtn" style="background: #667eea;">👥 Mit Freund</button>
+          <button class="editor-btn" onclick="setTTTMode('easy')" id="tttEasyBtn">🤖 Einfach</button>
+          <button class="editor-btn" onclick="setTTTMode('medium')" id="tttMediumBtn">🤖 Mittel</button>
+          <button class="editor-btn" onclick="setTTTMode('hard')" id="tttHardBtn">🤖 Schwer</button>
+        </div>
+      </div>
+      
+      <p style="text-align: center; margin-bottom: 15px; font-weight: 700; font-size: 1.1rem;" id="tttStatus">Du bist X</p>
       <div class="ttt-board" id="tttBoard"></div>
       <div style="text-align: center; margin-top: 15px;">
         <button class="editor-btn" onclick="resetTicTacToe()">🔄 Neustart</button>
@@ -1128,23 +1140,6 @@
   <!-- User Greeting Card -->
   <div class="glass-card" style="text-align: center; padding: 15px;">
     <div style="font-size: 1.5rem; font-weight: 800; margin-bottom: 8px;" id="userGreeting">👋 Willkommen!</div>
-    <div style="display: flex; justify-content: center; gap: 20px; flex-wrap: wrap;">
-      <div class="stat-item" style="min-width: 120px;">
-        <span class="stat-emoji">🔥</span>
-        <span class="stat-value" id="streakCount">0</span>
-        <span class="stat-label">Tage Streak</span>
-      </div>
-      <div class="stat-item" style="min-width: 120px;">
-        <span class="stat-emoji">⭐</span>
-        <span class="stat-value" id="userLevel">1</span>
-        <span class="stat-label">Level</span>
-      </div>
-      <div class="stat-item" style="min-width: 120px;">
-        <span class="stat-emoji">🏆</span>
-        <span class="stat-value" id="achievementCount">0</span>
-        <span class="stat-label">Achievements</span>
-      </div>
-    </div>
   </div>
   
   <!-- Current Lesson Card -->
@@ -1313,30 +1308,14 @@ let darkMode = false;
 let lastLessonEndTime = 0;
 let pauseMinutes = 0;
 let pauseEndTime = null;
-let userStats = {
-  streak: 0,
-  level: 1,
-  completedLessons: 0,
-  achievements: []
-};
-
-// Achievements
-const achievements = [
-  { id: 'first_login', name: 'Erster Tag', desc: 'Willkommen im System!', icon: '🎉' },
-  { id: 'week_warrior', name: 'Wochen-Krieger', desc: '5 Tage in Folge eingeloggt', icon: '🔥' },
-  { id: 'month_master', name: 'Monats-Meister', desc: '30 Tage Streak', icon: '👑' },
-  { id: 'lesson_10', name: '10 Lektionen', desc: '10 Lektionen abgeschlossen', icon: '📚' },
-  { id: 'lesson_50', name: '50 Lektionen', desc: '50 Lektionen abgeschlossen', icon: '🎓' },
-  { id: 'lesson_100', name: '100 Lektionen', desc: '100 Lektionen abgeschlossen', icon: '🏆' },
-  { id: 'level_5', name: 'Level 5', desc: 'Level 5 erreicht', icon: '⭐' },
-  { id: 'level_10', name: 'Level 10', desc: 'Level 10 erreicht', icon: '🌟' },
-  { id: 'game_master', name: 'Spiele-Meister', desc: 'Alle 3 Spiele gewonnen', icon: '🎮' }
-];
+let pauseStartTime = null;
+let pausedLesson = null;
 
 // Games State
 let tttBoard = ['', '', '', '', '', '', '', '', ''];
 let tttCurrentPlayer = 'X';
 let tttGameOver = false;
+let tttMode = 'friend'; // 'friend', 'easy', 'medium', 'hard'
 
 let memoryCards = [];
 let memoryFlipped = [];
@@ -1413,30 +1392,125 @@ function startApp() {
   document.getElementById('userGreeting').textContent = `👋 Willkommen, ${capitalizedUser}!`;
   
   loadSettings();
-  updateStreak();
+  checkFirstLogin();
   update();
+}
+
+function checkFirstLogin() {
+  try {
+    const hasLoggedInBefore = getCookie('hasLoggedIn');
+    
+    if (!hasLoggedInBefore) {
+      // Erster Login - zeige Achievement
+      setTimeout(() => {
+        showFirstDayAchievement();
+      }, 1000);
+      
+      document.cookie = 'hasLoggedIn=true;max-age=31536000;path=/';
+    }
+  } catch(e) {}
+}
+
+function showFirstDayAchievement() {
+  document.getElementById('achievementIcon').textContent = '🎉';
+  document.getElementById('achievementTitle').textContent = 'Erster Tag';
+  document.getElementById('achievementDesc').textContent = 'Willkommen im System!';
+  
+  const popup = document.getElementById('achievementPopup');
+  popup.classList.add('show');
+  
+  if (soundEnabled) {
+    playSound(523, 0.2);
+    setTimeout(() => playSound(659, 0.2), 150);
+    setTimeout(() => playSound(784, 0.3), 300);
+  }
+  
+  setTimeout(() => {
+    popup.classList.remove('show');
+  }, 5000);
 }
 
 function togglePause() {
   document.getElementById('pauseOverlay').classList.add('active');
-  document.getElementById('pauseInfo').textContent = '';
+  document.getElementById('pauseTitle').textContent = 'Pause hinzufügen';
+  document.getElementById('pauseText').textContent = 'Wie lange dauert die Pause?';
+  document.getElementById('pauseButtons').style.display = 'flex';
+  document.getElementById('pauseTimer').style.display = 'none';
+  document.getElementById('pauseActions').innerHTML = '';
+  document.getElementById('pauseCancelBtn').style.display = 'block';
 }
 
 function addPause(minutes) {
   pauseMinutes = minutes;
+  pauseStartTime = new Date();
   pauseEndTime = new Date(Date.now() + minutes * 60000);
   
+  // Speichere aktuelle Lektion
+  const s = findCurrentSlot();
+  if (s.state === 'lesson') {
+    pausedLesson = {
+      slot: s.slot,
+      subject: s.subject,
+      teacher: s.teacher,
+      originalEnd: s.end
+    };
+  }
+  
+  // Update UI
+  document.getElementById('pauseTitle').textContent = '☕ Pausenzeit';
+  document.getElementById('pauseText').textContent = 'Genieße deine Pause!';
+  document.getElementById('pauseButtons').style.display = 'none';
+  document.getElementById('pauseTimer').style.display = 'block';
+  document.getElementById('pauseCancelBtn').style.display = 'none';
+  
   const endTimeStr = `${pad(pauseEndTime.getHours())}:${pad(pauseEndTime.getMinutes())}`;
-  document.getElementById('pauseInfo').innerHTML = `✅ Pause bis ${endTimeStr} hinzugefügt!<br><span style="font-size: 0.9rem; opacity: 0.8;">Die aktuelle Lektion wird um ${minutes} Minuten verlängert.</span>`;
+  document.getElementById('pauseActions').innerHTML = `
+    <p style="margin: 20px 0; font-size: 1.1rem; opacity: 0.9;">
+      Pause endet um ${endTimeStr}
+    </p>
+    <button class="welcome-btn" onclick="cancelPause()" style="background: #e53e3e; padding: 15px 30px;">
+      Macht Lehrer keine Pause? ❌
+    </button>
+  `;
   
   if (soundEnabled) {
     playSound(523, 0.15);
     setTimeout(() => playSound(659, 0.15), 100);
   }
   
-  setTimeout(() => {
+  updatePauseTimer();
+}
+
+function updatePauseTimer() {
+  if (!pauseEndTime) return;
+  
+  const now = new Date();
+  const left = Math.floor((pauseEndTime - now) / 1000);
+  
+  if (left <= 0) {
+    // Pause vorbei
     closePause();
-  }, 2000);
+    pauseEndTime = null;
+    pauseStartTime = null;
+    pausedLesson = null;
+    pauseMinutes = 0;
+    return;
+  }
+  
+  document.getElementById('pauseTimer').textContent = formatSeconds(left);
+  setTimeout(updatePauseTimer, 1000);
+}
+
+function cancelPause() {
+  pauseEndTime = null;
+  pauseStartTime = null;
+  pausedLesson = null;
+  pauseMinutes = 0;
+  closePause();
+  
+  if (soundEnabled) {
+    playSound(440, 0.1);
+  }
 }
 
 function closePause() {
@@ -1449,93 +1523,11 @@ function isPauseActive() {
   }
   if (pauseEndTime && new Date() >= pauseEndTime) {
     pauseEndTime = null;
+    pauseStartTime = null;
+    pausedLesson = null;
     pauseMinutes = 0;
   }
   return false;
-}
-
-function updateStreak() {
-  try {
-    const today = new Date().toDateString();
-    const lastLogin = getCookie('lastLogin');
-    const streakData = getCookie('streakData');
-    
-    if (lastLogin !== today) {
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      
-      if (lastLogin === yesterday.toDateString()) {
-        userStats.streak++;
-      } else if (!lastLogin) {
-        userStats.streak = 1;
-        unlockAchievement('first_login');
-      } else {
-        userStats.streak = 1;
-      }
-      
-      document.cookie = `lastLogin=${today};max-age=31536000;path=/`;
-      
-      if (userStats.streak === 5) unlockAchievement('week_warrior');
-      if (userStats.streak === 30) unlockAchievement('month_master');
-    }
-    
-    if (streakData) {
-      const data = JSON.parse(atob(streakData));
-      userStats = data;
-    }
-    
-    updateUserStats();
-    saveUserStats();
-  } catch(e) {}
-}
-
-function updateUserStats() {
-  document.getElementById('streakCount').textContent = userStats.streak;
-  document.getElementById('userLevel').textContent = userStats.level;
-  document.getElementById('achievementCount').textContent = userStats.achievements.length;
-  
-  const level = Math.floor(userStats.completedLessons / 10) + 1;
-  if (level > userStats.level) {
-    userStats.level = level;
-    if (level === 5) unlockAchievement('level_5');
-    if (level === 10) unlockAchievement('level_10');
-  }
-}
-
-function saveUserStats() {
-  try {
-    const encoded = btoa(JSON.stringify(userStats));
-    document.cookie = `streakData=${encoded};max-age=31536000;path=/`;
-  } catch(e) {}
-}
-
-function unlockAchievement(id) {
-  if (userStats.achievements.includes(id)) return;
-  
-  userStats.achievements.push(id);
-  const achievement = achievements.find(a => a.id === id);
-  
-  if (achievement) {
-    document.getElementById('achievementIcon').textContent = achievement.icon;
-    document.getElementById('achievementTitle').textContent = achievement.name;
-    document.getElementById('achievementDesc').textContent = achievement.desc;
-    
-    const popup = document.getElementById('achievementPopup');
-    popup.classList.add('show');
-    
-    if (soundEnabled) {
-      playSound(523, 0.2);
-      setTimeout(() => playSound(659, 0.2), 150);
-      setTimeout(() => playSound(784, 0.3), 300);
-    }
-    
-    setTimeout(() => {
-      popup.classList.remove('show');
-    }, 4000);
-  }
-  
-  updateUserStats();
-  saveUserStats();
 }
 
 function getCookie(name) {
@@ -1574,6 +1566,18 @@ function backToGameMenu() {
 }
 
 // Tic Tac Toe
+function setTTTMode(mode) {
+  tttMode = mode;
+  
+  // Update button styles
+  document.getElementById('tttFriendBtn').style.background = mode === 'friend' ? '#667eea' : '#718096';
+  document.getElementById('tttEasyBtn').style.background = mode === 'easy' ? '#667eea' : '#718096';
+  document.getElementById('tttMediumBtn').style.background = mode === 'medium' ? '#667eea' : '#718096';
+  document.getElementById('tttHardBtn').style.background = mode === 'hard' ? '#667eea' : '#718096';
+  
+  resetTicTacToe();
+}
+
 function resetTicTacToe() {
   tttBoard = ['', '', '', '', '', '', '', '', ''];
   tttCurrentPlayer = 'X';
@@ -1589,7 +1593,11 @@ function resetTicTacToe() {
     board.appendChild(cell);
   }
   
-  document.getElementById('tttStatus').textContent = 'Du bist X';
+  if (tttMode === 'friend') {
+    document.getElementById('tttStatus').textContent = 'Spieler X ist dran';
+  } else {
+    document.getElementById('tttStatus').textContent = 'Du bist X - Roboter ist O';
+  }
 }
 
 function makeTTTMove(index) {
@@ -1599,36 +1607,133 @@ function makeTTTMove(index) {
   updateTTTBoard();
   
   if (checkTTTWin()) {
-    document.getElementById('tttStatus').textContent = `${tttCurrentPlayer} gewinnt! 🎉`;
+    if (tttMode === 'friend') {
+      document.getElementById('tttStatus').textContent = `Spieler ${tttCurrentPlayer} gewinnt! 🎉`;
+    } else {
+      document.getElementById('tttStatus').textContent = tttCurrentPlayer === 'X' ? 'Du gewinnst! 🎉' : 'Roboter gewinnt! 🤖';
+    }
     tttGameOver = true;
-    if (tttCurrentPlayer === 'X') celebrate();
+    if (tttCurrentPlayer === 'X' || tttMode === 'friend') celebrate();
     return;
   }
   
   if (tttBoard.every(cell => cell !== '')) {
-    document.getElementById('tttStatus').textContent = 'Unentschieden!';
+    document.getElementById('tttStatus').textContent = 'Unentschieden! 🤝';
     tttGameOver = true;
     return;
   }
   
   tttCurrentPlayer = tttCurrentPlayer === 'X' ? 'O' : 'X';
-  document.getElementById('tttStatus').textContent = `${tttCurrentPlayer} ist dran`;
   
-  if (tttCurrentPlayer === 'O' && !tttGameOver) {
+  if (tttMode === 'friend') {
+    document.getElementById('tttStatus').textContent = `Spieler ${tttCurrentPlayer} ist dran`;
+  } else {
+    document.getElementById('tttStatus').textContent = tttCurrentPlayer === 'X' ? 'Du bist dran' : 'Roboter denkt...';
+  }
+  
+  if (tttCurrentPlayer === 'O' && tttMode !== 'friend' && !tttGameOver) {
     setTimeout(makeTTTComputerMove, 500);
   }
 }
 
 function makeTTTComputerMove() {
+  let move;
+  
+  if (tttMode === 'hard') {
+    move = getBestMove();
+  } else if (tttMode === 'medium') {
+    if (Math.random() < 0.5) {
+      move = getBestMove();
+    } else {
+      move = getRandomMove();
+    }
+  } else { // easy
+    move = getRandomMove();
+  }
+  
+  if (move !== -1) {
+    makeTTTMove(move);
+  }
+}
+
+function getRandomMove() {
   const empty = [];
   tttBoard.forEach((cell, i) => {
     if (cell === '') empty.push(i);
   });
   
   if (empty.length > 0) {
-    const move = empty[Math.floor(Math.random() * empty.length)];
-    makeTTTMove(move);
+    return empty[Math.floor(Math.random() * empty.length)];
   }
+  return -1;
+}
+
+function getBestMove() {
+  let bestScore = -Infinity;
+  let bestMove = -1;
+  
+  for (let i = 0; i < 9; i++) {
+    if (tttBoard[i] === '') {
+      tttBoard[i] = 'O';
+      let score = minimax(tttBoard, 0, false);
+      tttBoard[i] = '';
+      
+      if (score > bestScore) {
+        bestScore = score;
+        bestMove = i;
+      }
+    }
+  }
+  
+  return bestMove;
+}
+
+function minimax(board, depth, isMaximizing) {
+  const winner = checkTTTWinnerForMinimax();
+  
+  if (winner === 'O') return 10 - depth;
+  if (winner === 'X') return depth - 10;
+  if (board.every(cell => cell !== '')) return 0;
+  
+  if (isMaximizing) {
+    let bestScore = -Infinity;
+    for (let i = 0; i < 9; i++) {
+      if (board[i] === '') {
+        board[i] = 'O';
+        let score = minimax(board, depth + 1, false);
+        board[i] = '';
+        bestScore = Math.max(score, bestScore);
+      }
+    }
+    return bestScore;
+  } else {
+    let bestScore = Infinity;
+    for (let i = 0; i < 9; i++) {
+      if (board[i] === '') {
+        board[i] = 'X';
+        let score = minimax(board, depth + 1, true);
+        board[i] = '';
+        bestScore = Math.min(score, bestScore);
+      }
+    }
+    return bestScore;
+  }
+}
+
+function checkTTTWinnerForMinimax() {
+  const wins = [
+    [0,1,2], [3,4,5], [6,7,8],
+    [0,3,6], [1,4,7], [2,5,8],
+    [0,4,8], [2,4,6]
+  ];
+  
+  for (let combo of wins) {
+    const [a, b, c] = combo;
+    if (tttBoard[a] !== '' && tttBoard[a] === tttBoard[b] && tttBoard[a] === tttBoard[c]) {
+      return tttBoard[a];
+    }
+  }
+  return null;
 }
 
 function updateTTTBoard() {
@@ -1967,28 +2072,18 @@ function findCurrentSlot(now = new Date()) {
   const dIdx = todayIndex();
   if(dIdx < 0 || dIdx > 4) return {state: "none"};
   
+  // Check if we're in an active pause
+  if (isPauseActive()) {
+    return {
+      state: "pause_active",
+      pauseEnd: pauseEndTime,
+      pausedLesson: pausedLesson
+    };
+  }
+  
   for(let i = 0; i < slotTimes.length; i++) {
     const start = toDateToday(slotTimes[i][0], now);
-    let end = toDateToday(slotTimes[i][1], now);
-    
-    // Check if we're in a pause during this lesson
-    if (isPauseActive() && now >= start && now < end) {
-      // During pause, show pause state
-      return {
-        state: "pause_added",
-        slot: i,
-        start,
-        end: pauseEndTime,
-        originalEnd: end,
-        subject: week[dIdx][i] || "frei",
-        teacher: weekTeachers[dIdx][i] || ""
-      };
-    }
-    
-    // Extend lesson end time if pause was added
-    if (pauseEndTime && pauseEndTime > end) {
-      end = new Date(end.getTime() + pauseMinutes * 60000);
-    }
+    const end = toDateToday(slotTimes[i][1], now);
     
     if(now >= start && now < end) {
       return {
@@ -2003,13 +2098,7 @@ function findCurrentSlot(now = new Date()) {
   }
   
   for(let i = 0; i < slotTimes.length - 1; i++) {
-    let end = toDateToday(slotTimes[i][1], now);
-    
-    // Adjust break times if pause was added
-    if (pauseEndTime && pauseEndTime > end) {
-      end = new Date(end.getTime() + pauseMinutes * 60000);
-    }
-    
+    const end = toDateToday(slotTimes[i][1], now);
     const next = toDateToday(slotTimes[i + 1][0], now);
     if(now >= end && now < next) {
       return {
@@ -2219,16 +2308,21 @@ function update() {
   const meta = document.getElementById("metaInfo");
   const teacherDisp = document.getElementById("teacherDisplay");
   
-  if(s.state === "pause_added") {
-    const left = Math.floor((s.end - now) / 1000);
+  if(s.state === "pause_active") {
+    const left = Math.floor((s.pauseEnd - now) / 1000);
     timer.textContent = formatSeconds(left);
     timer.classList.remove('ending');
     
-    subjectTag.textContent = "☕ Zusätzliche Pause";
+    subjectTag.textContent = "☕ Pause läuft";
     subjectTag.className = "subject-tag";
     subjectTag.style.background = "linear-gradient(135deg, #48bb78, #38a169)";
-    meta.textContent = `Pause endet um ${pad(s.end.getHours())}:${pad(s.end.getMinutes())}`;
-    teacherDisp.textContent = `Danach geht ${s.subject} weiter`;
+    meta.textContent = `Pause endet um ${pad(s.pauseEnd.getHours())}:${pad(s.pauseEnd.getMinutes())}`;
+    
+    if (s.pausedLesson) {
+      teacherDisp.textContent = `Danach geht ${s.pausedLesson.subject} weiter`;
+    } else {
+      teacherDisp.textContent = '';
+    }
     
   } else if(s.state === "lesson") {
     const left = Math.floor((s.end - now) / 1000);
@@ -2243,10 +2337,6 @@ function update() {
     subjectTag.className = `subject-tag ${s.subject}`;
     meta.textContent = `${slotTimes[s.slot][0]} - ${slotTimes[s.slot][1]}`;
     
-    if (pauseEndTime && pauseEndTime > new Date()) {
-      meta.textContent += ` (+${pauseMinutes} Min Pause)`;
-    }
-    
     if(s.teacher) {
       const fullName = subjectNames[s.subject] || s.subject;
       const teacherFull = s.teacher.split('/').map(t => teacherNames[t] || t).join(' / ');
@@ -2257,14 +2347,6 @@ function update() {
     
     if(left === 0 && s.end.getTime() !== lastLessonEndTime) {
       lastLessonEndTime = s.end.getTime();
-      userStats.completedLessons++;
-      
-      if (userStats.completedLessons === 10) unlockAchievement('lesson_10');
-      if (userStats.completedLessons === 50) unlockAchievement('lesson_50');
-      if (userStats.completedLessons === 100) unlockAchievement('lesson_100');
-      
-      updateUserStats();
-      saveUserStats();
       celebrate();
     }
   } else if(s.state === "break") {
