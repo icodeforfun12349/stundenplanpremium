@@ -58,6 +58,22 @@
     text-shadow: 0 4px 20px rgba(0,0,0,0.3);
   }
   
+  .welcome-name-highlight {
+    display: inline-block;
+    background: linear-gradient(135deg, #ffd700, #ffed4e);
+    color: #667eea;
+    padding: 5px 20px;
+    border-radius: 12px;
+    font-weight: 900;
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
+    animation: glow 2s ease-in-out infinite;
+  }
+  
+  @keyframes glow {
+    0%, 100% { box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4); }
+    50% { box-shadow: 0 4px 25px rgba(255, 215, 0, 0.7); }
+  }
+  
   .welcome-subtitle {
     font-size: 1.3rem;
     margin-bottom: 30px;
@@ -101,6 +117,13 @@
     justify-content: center;
     z-index: 10000;
     animation: fadeIn 0.5s ease;
+    transition: opacity 0.5s ease, transform 0.5s ease;
+  }
+  
+  .login-screen.hide {
+    opacity: 0;
+    transform: scale(0.95);
+    pointer-events: none;
   }
   
   .login-screen.dark {
@@ -116,6 +139,18 @@
     width: 90%;
     max-width: 400px;
     animation: slideUp 0.8s ease;
+    transition: all 0.3s ease;
+  }
+  
+  .login-box.success {
+    animation: successPulse 0.5s ease;
+    background: rgba(72, 187, 120, 0.95);
+  }
+  
+  @keyframes successPulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
   }
   
   body.dark .login-box {
@@ -558,7 +593,7 @@
   }
   
   .header h1 {
-    font-size: 2rem;
+    font-size: 1.5rem;
     font-weight: 800;
     color: white;
     text-shadow: 0 2px 10px rgba(0,0,0,0.2);
@@ -991,13 +1026,13 @@
     .welcome-subtitle { font-size: 1.1rem; }
     .timer-display { font-size: 2.5rem; }
     .subject-display { font-size: 1.3rem; }
-    .header h1 { font-size: 1.3rem; }
+    .header h1 { font-size: 1.1rem; }
     .lesson-edit { grid-template-columns: 1fr; }
     .stats-bar { grid-template-columns: 1fr 1fr; }
     .games-grid { grid-template-columns: 1fr; }
     .memory-board { grid-template-columns: repeat(3, 1fr); }
     .controls { width: 100%; }
-    .btn { flex: 1; min-width: 100px; }
+    .btn { flex: 1; min-width: 100px; font-size: 0.9rem; padding: 10px 12px; }
   }
 </style>
 </head>
@@ -1008,27 +1043,6 @@
   <div class="login-box">
     <h1 class="login-title">🔐 Stundenplan Login</h1>
     <p class="login-subtitle">Premium Version - Nur für autorisierte Nutzer</p>
-    <p class="login-subtitle">Willst du ein Log-In? <p class="login-subtitle">
- 
-  <a href="https://media.tenor.com/XjB6UwsgXgwAAAAM/down-syndrome.gif" class="signup-link" target="_blank">Sign Up</a>
-</p>
-
-<style>
-.signup-link {
-  text-decoration: none;       /* Entfernt die Unterstreichung */
-  color: white;                /* Textfarbe */
-  background-color: #007BFF;   /* Button-Farbe */
-  padding: 8px 16px;           /* Padding */
-  border-radius: 4px;          /* Abgerundete Ecken */
-  font-weight: bold;           /* Fettgedruckt */
-}
-
-.signup-link:hover {
-  background-color: #0056b3;   /* Dunkler bei Hover */
-}
-</style>
-
-
     <input type="text" class="login-input" id="usernameInput" placeholder="Benutzername" autocomplete="username">
     <input type="password" class="login-input" id="passwordInput" placeholder="Passwort" autocomplete="current-password">
     <button class="login-btn" onclick="handleLogin()">Anmelden 🚀</button>
@@ -1385,8 +1399,26 @@ function handleLogin() {
     currentUser = username;
     document.cookie = `loggedInUser=${username};max-age=2592000;path=/`;
     
-    document.getElementById('loginScreen').style.display = 'none';
-    showWelcomeScreen();
+    // Success animation
+    const loginBox = document.querySelector('.login-box');
+    const loginScreen = document.getElementById('loginScreen');
+    
+    loginBox.classList.add('success');
+    
+    if (soundEnabled) {
+      playSound(523, 0.2);
+      setTimeout(() => playSound(659, 0.2), 100);
+      setTimeout(() => playSound(784, 0.3), 200);
+    }
+    
+    setTimeout(() => {
+      loginScreen.classList.add('hide');
+      setTimeout(() => {
+        loginScreen.style.display = 'none';
+        showWelcomeScreen();
+      }, 500);
+    }, 800);
+    
   } else {
     document.getElementById('loginError').style.display = 'block';
     document.getElementById('passwordInput').value = '';
@@ -1396,6 +1428,10 @@ function handleLogin() {
     setTimeout(() => {
       loginBox.style.animation = 'shake 0.5s';
     }, 10);
+    
+    setTimeout(() => {
+      document.getElementById('loginError').style.display = 'none';
+    }, 3000);
   }
 }
 
