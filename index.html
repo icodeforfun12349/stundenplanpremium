@@ -62,14 +62,14 @@
     font-size: 3rem;
     font-weight: 800;
     margin-bottom: 15px;
-    text-shadow: 0 4px px rgba(0,0,0,0.3);
+    text-shadow: 0 4px 8px rgba(0,0,0,0.3);
   }
   
   .welcome-name-highlight {
     display: inline-block;
     background: linear-gradient(135deg, #ffd700, #ffed4e);
     color: #667eea;
-    padding: 5px px;
+    padding: 5px 12px;
     border-radius: 12px;
     font-weight: 900;
     box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4);
@@ -402,6 +402,7 @@
     font-size: 2rem;
     font-weight: 800;
     background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background-clip: text;
     -webkit-background-clip: text;
     -webkit-text-fill-color: transparent;
   }
@@ -1232,8 +1233,8 @@
     position: fixed;
     right: 16px;
     bottom: 16px;
-    width: 48px;
-    height: 48px;
+    width: 60px;
+    height: 60px;
     border-radius: 50%;
     border: none;
     background: rgba(255,255,255,0.85);
@@ -1246,6 +1247,7 @@
     z-index: 10001;
     transition: transform 0.2s ease, box-shadow 0.2s ease;
   }
+  .settings-fab { font-size: 24px; }
   .settings-fab:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(0,0,0,0.25); }
   body.dark .settings-fab, body.theme-dark .settings-fab { background: rgba(30,30,50,0.9); color: #eee; }
 
@@ -1282,44 +1284,9 @@
   .theme-dark { background: linear-gradient(135deg, #0f0c29, #302b63); }
   .theme-chip.active { box-shadow: 0 0 0 2px white, 0 0 0 4px rgba(102,126,234,0.7); }
 
-  /* Onboarding */
-  .onboarding-overlay {
-    position: fixed;
-    inset: 0;
-    display: none;
-    z-index: 10050;
-    pointer-events: none;
-  }
-  .onboarding-overlay.active { display: block; }
-  .onboarding-mask {
-    position: absolute;
-    inset: 0;
-    background: rgba(0,0,0,0.6);
-    backdrop-filter: blur(2px);
-  }
-  .onboarding-highlight {
-    position: absolute;
-    border: 3px solid #ffd166;
-    border-radius: 14px;
-    box-shadow: 0 0 0 9999px rgba(0,0,0,0.6);
-    transition: all 0.25s ease;
-    pointer-events: none;
-  }
-  .onboarding-panel {
-    position: absolute;
-    max-width: 320px;
-    background: rgba(255,255,255,0.98);
-    color: #111;
-    border-radius: 14px;
-    padding: 14px;
-    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
-    pointer-events: auto;
-  }
-  body.dark .onboarding-panel, body.theme-dark .onboarding-panel { background: rgba(30,30,50,0.98); color: #eee; }
-  .panda-emoji { font-size: 1.6rem; margin-right: 6px; }
-  .onboarding-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:10px; }
-  .onboarding-btn { background: #667eea; color: #fff; border: none; border-radius: 10px; padding: 8px 12px; cursor: pointer; }
-  .onboarding-btn.secondary { background: #718096; }
+  /* Onboarding removed */
+
+  
 </style>
 </head>
 <body>
@@ -1369,6 +1336,11 @@
       <button class="welcome-btn" onclick="addPause(5)" style="padding: 15px 30px;">5 Min</button>
       <button class="welcome-btn" onclick="addPause(10)" style="padding: 15px 30px;">10 Min</button>
       <button class="welcome-btn" onclick="addPause(15)" style="padding: 15px 30px;">15 Min</button>
+      <div style="display:flex; gap:10px; align-items:center; flex-wrap:wrap;">
+        <input id="pauseCustomInput" type="number" min="1" max="240" placeholder="Minuten" 
+               style="padding:12px 14px; width:120px; border-radius:12px; border:none; font-weight:700;">
+        <button class="welcome-btn" onclick="addPauseCustom()" style="padding: 15px 24px;">Starten</button>
+      </div>
     </div>
     <div id="pauseTimer" style="display: none; font-size: 3rem; font-weight: 900; margin: 20px 0;"></div>
     <div id="pauseActions"></div>
@@ -1563,26 +1535,20 @@
         <input type="checkbox" id="soundToggle">
       </label>
     </div>
+    <div class="settings-row">
+      <div>
+        <div style="font-weight:700;">Desktop-Benachrichtigungen</div>
+        <div style="opacity:0.7;font-size:0.9rem;">Lektions- und Pausenstart</div>
+      </div>
+      <label style="display:inline-flex;align-items:center;gap:8px;">
+        <input type="checkbox" id="notificationsToggle">
+      </label>
+    </div>
   </div>
   
 </div>
 
-<!-- Onboarding -->
-<div class="onboarding-overlay" id="onboardingOverlay" aria-hidden="true">
-  <div class="onboarding-mask"></div>
-  <div class="onboarding-highlight" id="onboardingHighlight"></div>
-  <div class="onboarding-panel" id="onboardingPanel" style="display:none;">
-    <div style="display:flex;align-items:center;font-weight:800;margin-bottom:6px;">
-      <span class="panda-emoji">🐼</span>
-      <span id="onboardingTitle">Willkommen!</span>
-    </div>
-    <div id="onboardingText" style="opacity:0.9;font-size:0.95rem;"></div>
-    <div class="onboarding-actions">
-      <button class="onboarding-btn secondary" id="onboardingSkip">Überspringen</button>
-      <button class="onboarding-btn" id="onboardingNext">Weiter</button>
-    </div>
-  </div>
-</div>
+<!-- Onboarding removed -->
 
 <!-- Main Container -->
 <div class="main-container" id="mainContainer">
@@ -1594,6 +1560,7 @@
       <button class="btn" id="soundBtn" title="Sound umschalten">🔔 Sound</button>
       <button class="btn" id="darkBtn" title="Theme umschalten">🌙 Dark</button>
       <button class="btn" id="editBtn" title="Heutigen Plan bearbeiten">✏️ Bearbeiten</button>
+      
     </div>
   </div>
   
@@ -1685,6 +1652,11 @@
     <h2 class="schedule-title">📋 Heutiger Stundenplan</h2>
     <div id="todaySchedule"></div>
   </div>
+
+  <!-- Footer Logout Button -->
+  <div class="glass-card" style="text-align:center;">
+    <button class="btn" id="logoutBtn" title="Abmelden" style="padding:14px 24px; font-weight:800; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color:#fff;">🚪 Logout</button>
+  </div>
 </div>
 
 <script>
@@ -1764,10 +1736,8 @@ let soundEnabled = true;
 let darkMode = false;
 let theme = 'blue';
 let showSeconds = false;
-let onboardingDone = false;
-let onboardingActive = false;
-let onboardingStep = 0;
-let onboardingSteps = [];
+let notificationsEnabled = false;
+let lastStateKey = '';
 let lastLessonEndTime = 0;
 let pauseMinutes = 0;
 let pauseEndTime = null;
@@ -1832,17 +1802,13 @@ window.addEventListener('DOMContentLoaded', () => {
       if (document.getElementById('settingsModal').classList.contains('active')) closeSettings();
       if (document.getElementById('gamesModal').classList.contains('active')) closeGames();
       if (document.getElementById('pauseOverlay').classList.contains('active')) closePause();
-      if (onboardingActive) endOnboarding();
     }
   });
 
-  // Onboarding buttons
-  const obSkip = document.getElementById('onboardingSkip');
-  const obNext = document.getElementById('onboardingNext');
-  if (obSkip) obSkip.addEventListener('click', () => endOnboarding(true));
-  if (obNext) obNext.addEventListener('click', nextOnboardingStep);
-  window.addEventListener('resize', positionOnboardingStep);
-  window.addEventListener('scroll', positionOnboardingStep, true);
+  const fullscreenBtn = document.getElementById('fullscreenBtn');
+  const logoutBtn = document.getElementById('logoutBtn');
+  if (fullscreenBtn) fullscreenBtn.addEventListener('click', toggleFullscreen);
+  if (logoutBtn) logoutBtn.addEventListener('click', handleLogout);
 });
 
 function checkLoginStatus() {
@@ -1939,10 +1905,8 @@ function startApp() {
   loadSettings();
   showLoginAchievement();
   update();
-
-  if (!onboardingDone) {
-    setTimeout(startOnboarding, 700);
-  }
+  // Initialize notification state key to avoid first-run notification
+  try { lastStateKey = getStateKey(findCurrentSlot()); } catch(e) {}
 }
 
 function showLoginAchievement() {
@@ -2015,6 +1979,18 @@ function addPause(minutes) {
   }
   
   updatePauseTimer();
+}
+
+function addPauseCustom() {
+  const input = document.getElementById('pauseCustomInput');
+  if (!input) return;
+  const val = parseInt(input.value, 10);
+  if (isNaN(val) || val <= 0) {
+    alert('Bitte eine gültige Minutenanzahl eingeben.');
+    return;
+  }
+  const minutes = Math.max(1, Math.min(val, 240));
+  addPause(minutes);
 }
 
 function updatePauseTimer() {
@@ -3177,7 +3153,7 @@ function saveSettings() {
     darkMode,
     theme,
     showSeconds,
-    onboardingDone,
+    notificationsEnabled,
     week,
     weekTeachers
   };
@@ -3210,6 +3186,7 @@ function loadSettings() {
         theme = darkMode ? 'dark' : 'blue';
       }
       showSeconds = settings.showSeconds ?? false;
+      notificationsEnabled = settings.notificationsEnabled ?? false;
       
       if(settings.week) week = settings.week;
       if(settings.weekTeachers) weekTeachers = settings.weekTeachers;
@@ -3220,97 +3197,17 @@ function loadSettings() {
       // Initialize settings modal controls if present
       const secToggle = document.getElementById('showSecondsToggle');
       const soundToggle = document.getElementById('soundToggle');
+      const notifToggle = document.getElementById('notificationsToggle');
       if (secToggle) secToggle.checked = showSeconds;
       if (soundToggle) soundToggle.checked = soundEnabled;
+      if (notifToggle) notifToggle.checked = notificationsEnabled;
       highlightActiveThemeChip();
-
-      onboardingDone = settings.onboardingDone ?? false;
     }
   } catch(e) {}
 }
 
 // Onboarding logic
-function startOnboarding() {
-  onboardingSteps = [
-    { selector: '#settingsFab', title: 'Einstellungen', text: 'Hier findest du Themen, Sound und mehr.' },
-    { selector: '#timerDisplay', title: 'Timer', text: 'Zeigt die verbleibende Zeit der aktuellen Lektion.' },
-    { selector: '#subjectTag', title: 'Fach', text: 'Aktuelles Fach mit Farbe. Lehrperson darunter.' },
-    { selector: '#gamesBtn', title: 'Spiele', text: 'Öffnet das Spiele-Center für kurze Pausen.' },
-    { selector: '#editBtn', title: 'Bearbeiten', text: 'Passe den heutigen Stundenplan schnell an.' },
-    { selector: '#todaySchedule', title: 'Heutiger Plan', text: 'Alle Lektionen des Tages auf einen Blick.' }
-  ];
-  onboardingStep = 0;
-  onboardingActive = true;
-  document.getElementById('onboardingOverlay').classList.add('active');
-  document.getElementById('onboardingPanel').style.display = 'block';
-  showOnboardingStep();
-}
-
-function endOnboarding(markDone = false) {
-  onboardingActive = false;
-  const overlay = document.getElementById('onboardingOverlay');
-  overlay.classList.remove('active');
-  document.getElementById('onboardingPanel').style.display = 'none';
-  if (markDone) {
-    onboardingDone = true;
-    saveSettings();
-  }
-}
-
-function nextOnboardingStep() {
-  onboardingStep++;
-  if (onboardingStep >= onboardingSteps.length) {
-    onboardingDone = true;
-    saveSettings();
-    endOnboarding();
-    return;
-  }
-  showOnboardingStep();
-}
-
-function showOnboardingStep() {
-  positionOnboardingStep();
-}
-
-function positionOnboardingStep() {
-  if (!onboardingActive) return;
-  const step = onboardingSteps[onboardingStep];
-  if (!step) return;
-  const el = document.querySelector(step.selector);
-  const highlight = document.getElementById('onboardingHighlight');
-  const panel = document.getElementById('onboardingPanel');
-  if (!el) {
-    nextOnboardingStep();
-    return;
-  }
-  const rect = el.getBoundingClientRect();
-  const pad = 8;
-  highlight.style.left = `${Math.max(0, rect.left - pad)}px`;
-  highlight.style.top = `${Math.max(0, rect.top - pad)}px`;
-  highlight.style.width = `${rect.width + pad * 2}px`;
-  highlight.style.height = `${rect.height + pad * 2}px`;
-
-  document.getElementById('onboardingTitle').textContent = step.title;
-  document.getElementById('onboardingText').textContent = step.text;
-
-  // Position panel: try bottom, else top
-  const panelWidth = 320;
-  const gap = 10;
-  let panelLeft = rect.left + window.scrollX;
-  let panelTop = rect.bottom + gap + window.scrollY;
-
-  if (panelLeft + panelWidth > window.innerWidth - 12) {
-    panelLeft = window.innerWidth - panelWidth - 12;
-  }
-  if (panelTop + panel.offsetHeight > window.scrollY + window.innerHeight - 12) {
-    panelTop = rect.top - panel.offsetHeight - gap + window.scrollY;
-  }
-
-  panel.style.left = `${Math.max(12, panelLeft)}px`;
-  panel.style.top = `${Math.max(12, panelTop)}px`;
-  // Ensure element is in view
-  try { el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' }); } catch(e) {}
-}
+// Onboarding removed
 
 function applyTheme() {
   document.body.classList.remove('theme-blue','theme-pink','theme-light','theme-dark');
@@ -3324,8 +3221,10 @@ function openSettings() {
   // Sync current values into modal controls
   const secToggle = document.getElementById('showSecondsToggle');
   const soundToggle = document.getElementById('soundToggle');
+  const notifToggle = document.getElementById('notificationsToggle');
   if (secToggle) secToggle.checked = showSeconds;
   if (soundToggle) soundToggle.checked = soundEnabled;
+  if (notifToggle) notifToggle.checked = notificationsEnabled;
   highlightActiveThemeChip();
   document.getElementById('settingsModal').classList.add('active');
   wireSettingsControls();
@@ -3349,6 +3248,7 @@ function wireSettingsControls() {
   // Toggles
   const secToggle = document.getElementById('showSecondsToggle');
   const soundToggle = document.getElementById('soundToggle');
+  const notifToggle = document.getElementById('notificationsToggle');
   if (secToggle) {
     secToggle.onchange = () => { showSeconds = secToggle.checked; saveSettings(); };
   }
@@ -3358,6 +3258,15 @@ function wireSettingsControls() {
       document.getElementById('soundBtn').innerHTML = soundEnabled ? '🔔 Sound' : '🔕 Stumm';
       if(soundEnabled) playSound(440, 0.1);
       saveSettings(); 
+    };
+  }
+  if (notifToggle) {
+    notifToggle.onchange = () => {
+      notificationsEnabled = notifToggle.checked;
+      if (notificationsEnabled && 'Notification' in window) {
+        try { Notification.requestPermission(); } catch(e) {}
+      }
+      saveSettings();
     };
   }
 }
@@ -3481,6 +3390,57 @@ function update() {
   }
   
   renderTodaySchedule();
+
+  // Notifications on state change
+  const currentKey = getStateKey(s);
+  if (!lastStateKey) {
+    lastStateKey = currentKey;
+  } else if (notificationsEnabled && currentKey !== lastStateKey) {
+    try {
+      if ('Notification' in window && Notification.permission === 'granted') {
+        if (s.state === 'lesson') {
+          const title = '🔔 Neue Lektion';
+          const body = `${s.subject || ''} ${s.slot != null ? `(${slotTimes[s.slot][0]}-${slotTimes[s.slot][1]})` : ''}`.trim();
+          new Notification(title, { body });
+        } else if (s.state === 'break') {
+          const title = '☕ Pause';
+          const body = `Bis ${pad(s.end.getHours())}:${pad(s.end.getMinutes())}`;
+          new Notification(title, { body });
+        } else if (s.state === 'pause_active') {
+          const title = '☕ Manuelle Pause gestartet';
+          const body = `Ende um ${pad(s.pauseEnd.getHours())}:${pad(s.pauseEnd.getMinutes())}`;
+          new Notification(title, { body });
+        }
+      }
+    } catch(e) {}
+    lastStateKey = currentKey;
+  }
+}
+
+function getStateKey(s) {
+  if (!s) return 'none';
+  if (s.state === 'lesson') return `lesson:${s.slot}`;
+  if (s.state === 'break') return `break:${s.after}`;
+  if (s.state === 'pause_active') return 'pause_active';
+  return s.state || 'none';
+}
+
+function toggleFullscreen() {
+  try {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen();
+    } else {
+      document.exitFullscreen();
+    }
+  } catch(e) {}
+}
+
+function handleLogout() {
+  try {
+    // Clear auth cookie and saved settings for a clean logout
+    document.cookie = 'loggedInUser=; Max-Age=0; path=/';
+  } catch(e) {}
+  location.reload();
 }
 
 let wakeLock = null;
