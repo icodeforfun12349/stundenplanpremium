@@ -19,6 +19,12 @@
   body.dark {
     background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%);
   }
+
+  /* Theme variants */
+  body.theme-blue { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); }
+  body.theme-pink { background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); }
+  body.theme-light { background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%); }
+  body.theme-dark { background: linear-gradient(135deg, #0f0c29 0%, #302b63 50%, #24243e 100%); }
   
   /* Welcome Screen */
   .welcome-screen {
@@ -419,7 +425,7 @@
   
   .games-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 15px;
     margin-bottom: 20px;
   }
@@ -1220,6 +1226,100 @@
     .controls { width: 100%; }
     .btn { flex: 1; min-width: 100px; font-size: 0.9rem; padding: 10px 12px; }
   }
+
+  /* Settings FAB + Modal */
+  .settings-fab {
+    position: fixed;
+    right: 16px;
+    bottom: 16px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,0.85);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    backdrop-filter: blur(8px);
+    z-index: 10001;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+  }
+  .settings-fab:hover { transform: translateY(-2px); box-shadow: 0 12px 28px rgba(0,0,0,0.25); }
+  body.dark .settings-fab, body.theme-dark .settings-fab { background: rgba(30,30,50,0.9); color: #eee; }
+
+  .settings-modal {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10002;
+    animation: fadeIn 0.2s ease;
+  }
+  .settings-modal.active { display: flex; }
+  .settings-panel {
+    width: 90%;
+    max-width: 420px;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(16px);
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+  }
+  body.dark .settings-panel, body.theme-dark .settings-panel { background: rgba(30,30,50,0.95); color: #eee; }
+  .settings-row { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid rgba(0,0,0,0.06); }
+  body.dark .settings-row, body.theme-dark .settings-row { border-color: rgba(255,255,255,0.08); }
+  .settings-title { font-weight: 800; font-size: 1.1rem; margin-bottom: 6px; }
+  .settings-close { background: #e53e3e; color: #fff; border: none; border-radius: 10px; padding: 8px 12px; cursor: pointer; }
+  .theme-options { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-top: 8px; }
+  .theme-chip { height: 34px; border-radius: 10px; border: 2px solid transparent; cursor: pointer; }
+  .theme-blue { background: linear-gradient(135deg, #667eea, #764ba2); }
+  .theme-pink { background: linear-gradient(135deg, #f093fb, #f5576c); }
+  .theme-light { background: linear-gradient(135deg, #f5f7fa, #c3cfe2); }
+  .theme-dark { background: linear-gradient(135deg, #0f0c29, #302b63); }
+  .theme-chip.active { box-shadow: 0 0 0 2px white, 0 0 0 4px rgba(102,126,234,0.7); }
+
+  /* Onboarding */
+  .onboarding-overlay {
+    position: fixed;
+    inset: 0;
+    display: none;
+    z-index: 10050;
+    pointer-events: none;
+  }
+  .onboarding-overlay.active { display: block; }
+  .onboarding-mask {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    backdrop-filter: blur(2px);
+  }
+  .onboarding-highlight {
+    position: absolute;
+    border: 3px solid #ffd166;
+    border-radius: 14px;
+    box-shadow: 0 0 0 9999px rgba(0,0,0,0.6);
+    transition: all 0.25s ease;
+    pointer-events: none;
+  }
+  .onboarding-panel {
+    position: absolute;
+    max-width: 320px;
+    background: rgba(255,255,255,0.98);
+    color: #111;
+    border-radius: 14px;
+    padding: 14px;
+    box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+    pointer-events: auto;
+  }
+  body.dark .onboarding-panel, body.theme-dark .onboarding-panel { background: rgba(30,30,50,0.98); color: #eee; }
+  .panda-emoji { font-size: 1.6rem; margin-right: 6px; }
+  .onboarding-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:10px; }
+  .onboarding-btn { background: #667eea; color: #fff; border: none; border-radius: 10px; padding: 8px 12px; cursor: pointer; }
+  .onboarding-btn.secondary { background: #718096; }
 </style>
 </head>
 <body>
@@ -1423,16 +1523,77 @@
   </div>
 </div>
 
+<!-- Settings FAB -->
+<button class="settings-fab" id="settingsFab" title="Einstellungen">⚙️</button>
+
+<!-- Settings Modal -->
+<div class="settings-modal" id="settingsModal">
+  <div class="settings-panel">
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:6px;">
+      <div class="settings-title">Einstellungen</div>
+      <button class="settings-close" id="settingsCloseBtn">Schliessen</button>
+    </div>
+    <div class="settings-row" style="border-top:1px solid rgba(0,0,0,0.06);">
+      <div>
+        <div style="font-weight:700;">Thema</div>
+        <div class="theme-options">
+          <div class="theme-chip theme-blue" data-theme="blue"></div>
+          <div class="theme-chip theme-pink" data-theme="pink"></div>
+          <div class="theme-chip theme-light" data-theme="light"></div>
+          <div class="theme-chip theme-dark" data-theme="dark"></div>
+        </div>
+      </div>
+      <div></div>
+    </div>
+    <div class="settings-row">
+      <div>
+        <div style="font-weight:700;">Sekunden anzeigen</div>
+        <div style="opacity:0.7;font-size:0.9rem;">Aktuelle Zeit mit Sekunden</div>
+      </div>
+      <label style="display:inline-flex;align-items:center;gap:8px;">
+        <input type="checkbox" id="showSecondsToggle">
+      </label>
+    </div>
+    <div class="settings-row">
+      <div>
+        <div style="font-weight:700;">Sound</div>
+        <div style="opacity:0.7;font-size:0.9rem;">Benachrichtigungen und Spiele</div>
+      </div>
+      <label style="display:inline-flex;align-items:center;gap:8px;">
+        <input type="checkbox" id="soundToggle">
+      </label>
+    </div>
+  </div>
+  
+</div>
+
+<!-- Onboarding -->
+<div class="onboarding-overlay" id="onboardingOverlay" aria-hidden="true">
+  <div class="onboarding-mask"></div>
+  <div class="onboarding-highlight" id="onboardingHighlight"></div>
+  <div class="onboarding-panel" id="onboardingPanel" style="display:none;">
+    <div style="display:flex;align-items:center;font-weight:800;margin-bottom:6px;">
+      <span class="panda-emoji">🐼</span>
+      <span id="onboardingTitle">Willkommen!</span>
+    </div>
+    <div id="onboardingText" style="opacity:0.9;font-size:0.95rem;"></div>
+    <div class="onboarding-actions">
+      <button class="onboarding-btn secondary" id="onboardingSkip">Überspringen</button>
+      <button class="onboarding-btn" id="onboardingNext">Weiter</button>
+    </div>
+  </div>
+</div>
+
 <!-- Main Container -->
 <div class="main-container" id="mainContainer">
   <div class="header">
     <h1>📚 Stundenplan Live - Premium</h1>
     <div class="controls">
       <button class="btn" id="gamesBtn">🎮 Spiele</button>
-      <button class="btn" id="pauseBtn">⏸️ Pause</button>
-      <button class="btn" id="soundBtn">🔔 Sound</button>
-      <button class="btn" id="darkBtn">🌙 Dark</button>
-      <button class="btn" id="editBtn">✏️ Bearbeiten</button>
+      <button class="btn" id="pauseBtn" title="Pause hinzufügen">⏸️ Pause</button>
+      <button class="btn" id="soundBtn" title="Sound umschalten">🔔 Sound</button>
+      <button class="btn" id="darkBtn" title="Theme umschalten">🌙 Dark</button>
+      <button class="btn" id="editBtn" title="Heutigen Plan bearbeiten">✏️ Bearbeiten</button>
     </div>
   </div>
   
@@ -1601,6 +1762,12 @@ const motivations = [
 
 let soundEnabled = true;
 let darkMode = false;
+let theme = 'blue';
+let showSeconds = false;
+let onboardingDone = false;
+let onboardingActive = false;
+let onboardingStep = 0;
+let onboardingSteps = [];
 let lastLessonEndTime = 0;
 let pauseMinutes = 0;
 let pauseEndTime = null;
@@ -1648,6 +1815,34 @@ window.addEventListener('DOMContentLoaded', () => {
   document.getElementById('usernameInput').addEventListener('keypress', (e) => {
     if (e.key === 'Enter') handleLogin();
   });
+
+  // Settings FAB
+  const settingsFab = document.getElementById('settingsFab');
+  const settingsModal = document.getElementById('settingsModal');
+  const settingsCloseBtn = document.getElementById('settingsCloseBtn');
+  settingsFab.addEventListener('click', openSettings);
+  settingsCloseBtn.addEventListener('click', closeSettings);
+  settingsModal.addEventListener('click', (e) => { if (e.target === settingsModal) closeSettings(); });
+  const gamesModal = document.getElementById('gamesModal');
+  gamesModal.addEventListener('click', (e) => { if (e.target === gamesModal) closeGames(); });
+
+  // Global ESC to close modals/overlays
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      if (document.getElementById('settingsModal').classList.contains('active')) closeSettings();
+      if (document.getElementById('gamesModal').classList.contains('active')) closeGames();
+      if (document.getElementById('pauseOverlay').classList.contains('active')) closePause();
+      if (onboardingActive) endOnboarding();
+    }
+  });
+
+  // Onboarding buttons
+  const obSkip = document.getElementById('onboardingSkip');
+  const obNext = document.getElementById('onboardingNext');
+  if (obSkip) obSkip.addEventListener('click', () => endOnboarding(true));
+  if (obNext) obNext.addEventListener('click', nextOnboardingStep);
+  window.addEventListener('resize', positionOnboardingStep);
+  window.addEventListener('scroll', positionOnboardingStep, true);
 });
 
 function checkLoginStatus() {
@@ -1744,6 +1939,10 @@ function startApp() {
   loadSettings();
   showLoginAchievement();
   update();
+
+  if (!onboardingDone) {
+    setTimeout(startOnboarding, 700);
+  }
 }
 
 function showLoginAchievement() {
@@ -2596,8 +2795,9 @@ document.getElementById('pauseBtn').addEventListener('click', togglePause);
 
 document.getElementById('darkBtn').addEventListener('click', () => {
   darkMode = !darkMode;
-  document.body.classList.toggle('dark', darkMode);
-  document.getElementById('darkBtn').innerHTML = darkMode ? '☀️ Light' : '🌙 Dark';
+  theme = darkMode ? 'dark' : 'blue';
+  applyTheme();
+  document.getElementById('darkBtn').innerHTML = theme === 'dark' ? '☀️ Light' : '🌙 Dark';
   saveSettings();
 });
 
@@ -2975,6 +3175,9 @@ function saveSettings() {
   const settings = {
     soundEnabled,
     darkMode,
+    theme,
+    showSeconds,
+    onboardingDone,
     week,
     weekTeachers
   };
@@ -2998,23 +3201,181 @@ function loadSettings() {
       const settings = data.settings;
       
       soundEnabled = settings.soundEnabled ?? true;
-      darkMode = settings.darkMode ?? false;
+      // Migrate legacy darkMode -> theme if theme missing
+      if (settings.theme) {
+        theme = settings.theme;
+        darkMode = theme === 'dark';
+      } else {
+        darkMode = settings.darkMode ?? false;
+        theme = darkMode ? 'dark' : 'blue';
+      }
+      showSeconds = settings.showSeconds ?? false;
       
       if(settings.week) week = settings.week;
       if(settings.weekTeachers) weekTeachers = settings.weekTeachers;
       
-      document.body.classList.toggle('dark', darkMode);
-      document.getElementById('darkBtn').innerHTML = darkMode ? '☀️ Light' : '🌙 Dark';
+      applyTheme();
+      document.getElementById('darkBtn').innerHTML = theme === 'dark' ? '☀️ Light' : '🌙 Dark';
       document.getElementById('soundBtn').innerHTML = soundEnabled ? '🔔 Sound' : '🔕 Stumm';
+      // Initialize settings modal controls if present
+      const secToggle = document.getElementById('showSecondsToggle');
+      const soundToggle = document.getElementById('soundToggle');
+      if (secToggle) secToggle.checked = showSeconds;
+      if (soundToggle) soundToggle.checked = soundEnabled;
+      highlightActiveThemeChip();
+
+      onboardingDone = settings.onboardingDone ?? false;
     }
   } catch(e) {}
+}
+
+// Onboarding logic
+function startOnboarding() {
+  onboardingSteps = [
+    { selector: '#settingsFab', title: 'Einstellungen', text: 'Hier findest du Themen, Sound und mehr.' },
+    { selector: '#timerDisplay', title: 'Timer', text: 'Zeigt die verbleibende Zeit der aktuellen Lektion.' },
+    { selector: '#subjectTag', title: 'Fach', text: 'Aktuelles Fach mit Farbe. Lehrperson darunter.' },
+    { selector: '#gamesBtn', title: 'Spiele', text: 'Öffnet das Spiele-Center für kurze Pausen.' },
+    { selector: '#editBtn', title: 'Bearbeiten', text: 'Passe den heutigen Stundenplan schnell an.' },
+    { selector: '#todaySchedule', title: 'Heutiger Plan', text: 'Alle Lektionen des Tages auf einen Blick.' }
+  ];
+  onboardingStep = 0;
+  onboardingActive = true;
+  document.getElementById('onboardingOverlay').classList.add('active');
+  document.getElementById('onboardingPanel').style.display = 'block';
+  showOnboardingStep();
+}
+
+function endOnboarding(markDone = false) {
+  onboardingActive = false;
+  const overlay = document.getElementById('onboardingOverlay');
+  overlay.classList.remove('active');
+  document.getElementById('onboardingPanel').style.display = 'none';
+  if (markDone) {
+    onboardingDone = true;
+    saveSettings();
+  }
+}
+
+function nextOnboardingStep() {
+  onboardingStep++;
+  if (onboardingStep >= onboardingSteps.length) {
+    onboardingDone = true;
+    saveSettings();
+    endOnboarding();
+    return;
+  }
+  showOnboardingStep();
+}
+
+function showOnboardingStep() {
+  positionOnboardingStep();
+}
+
+function positionOnboardingStep() {
+  if (!onboardingActive) return;
+  const step = onboardingSteps[onboardingStep];
+  if (!step) return;
+  const el = document.querySelector(step.selector);
+  const highlight = document.getElementById('onboardingHighlight');
+  const panel = document.getElementById('onboardingPanel');
+  if (!el) {
+    nextOnboardingStep();
+    return;
+  }
+  const rect = el.getBoundingClientRect();
+  const pad = 8;
+  highlight.style.left = `${Math.max(0, rect.left - pad)}px`;
+  highlight.style.top = `${Math.max(0, rect.top - pad)}px`;
+  highlight.style.width = `${rect.width + pad * 2}px`;
+  highlight.style.height = `${rect.height + pad * 2}px`;
+
+  document.getElementById('onboardingTitle').textContent = step.title;
+  document.getElementById('onboardingText').textContent = step.text;
+
+  // Position panel: try bottom, else top
+  const panelWidth = 320;
+  const gap = 10;
+  let panelLeft = rect.left + window.scrollX;
+  let panelTop = rect.bottom + gap + window.scrollY;
+
+  if (panelLeft + panelWidth > window.innerWidth - 12) {
+    panelLeft = window.innerWidth - panelWidth - 12;
+  }
+  if (panelTop + panel.offsetHeight > window.scrollY + window.innerHeight - 12) {
+    panelTop = rect.top - panel.offsetHeight - gap + window.scrollY;
+  }
+
+  panel.style.left = `${Math.max(12, panelLeft)}px`;
+  panel.style.top = `${Math.max(12, panelTop)}px`;
+  // Ensure element is in view
+  try { el.scrollIntoView({ behavior: 'smooth', block: 'center', inline: 'center' }); } catch(e) {}
+}
+
+function applyTheme() {
+  document.body.classList.remove('theme-blue','theme-pink','theme-light','theme-dark');
+  document.body.classList.add(`theme-${theme}`);
+  // Keep legacy dark class for existing styles
+  document.body.classList.toggle('dark', theme === 'dark');
+  highlightActiveThemeChip();
+}
+
+function openSettings() {
+  // Sync current values into modal controls
+  const secToggle = document.getElementById('showSecondsToggle');
+  const soundToggle = document.getElementById('soundToggle');
+  if (secToggle) secToggle.checked = showSeconds;
+  if (soundToggle) soundToggle.checked = soundEnabled;
+  highlightActiveThemeChip();
+  document.getElementById('settingsModal').classList.add('active');
+  wireSettingsControls();
+}
+
+function closeSettings() {
+  document.getElementById('settingsModal').classList.remove('active');
+}
+
+function wireSettingsControls() {
+  // Theme chips
+  document.querySelectorAll('.theme-chip').forEach(chip => {
+    chip.onclick = () => {
+      const selected = chip.getAttribute('data-theme');
+      theme = selected;
+      darkMode = theme === 'dark';
+      applyTheme();
+      saveSettings();
+    };
+  });
+  // Toggles
+  const secToggle = document.getElementById('showSecondsToggle');
+  const soundToggle = document.getElementById('soundToggle');
+  if (secToggle) {
+    secToggle.onchange = () => { showSeconds = secToggle.checked; saveSettings(); };
+  }
+  if (soundToggle) {
+    soundToggle.onchange = () => { 
+      soundEnabled = soundToggle.checked; 
+      document.getElementById('soundBtn').innerHTML = soundEnabled ? '🔔 Sound' : '🔕 Stumm';
+      if(soundEnabled) playSound(440, 0.1);
+      saveSettings(); 
+    };
+  }
+}
+
+function highlightActiveThemeChip() {
+  document.querySelectorAll('.theme-chip').forEach(chip => {
+    const isActive = chip.getAttribute('data-theme') === theme;
+    chip.classList.toggle('active', isActive);
+  });
 }
 
 function update() {
   const now = new Date();
   
   document.getElementById("currentTime").textContent = 
-    `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`;
+    showSeconds 
+      ? `${pad(now.getHours())}:${pad(now.getMinutes())}:${pad(now.getSeconds())}`
+      : `${pad(now.getHours())}:${pad(now.getMinutes())}`;
   
   const dayProg = calculateDayProgress(now);
   const weekProg = calculateWeekProgress(now);
